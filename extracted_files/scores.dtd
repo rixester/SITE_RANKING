@@ -1,0 +1,37 @@
+<!ELEMENT scores (world)+>
+
+<!ELEMENT world (characters, guilds)>
+<!ATTLIST world
+  id CDATA #REQUIRED
+>
+
+<!ELEMENT characters (character)+>
+<!ELEMENT guilds (guild)+>
+
+<!ELEMENT character (stats, ranks)>
+<!ATTLIST character
+  name CDATA #REQUIRED
+>
+
+<!ELEMENT stats (level, vocation, exppoints, achievement, guild?, quota?)>
+<!ELEMENT ranks (rank)+>
+
+<!ELEMENT level (#PCDATA)>
+<!ELEMENT vocation (#PCDATA)>
+<!ELEMENT exppoints (#PCDATA)>
+<!ELEMENT achievement (#PCDATA)>
+<!ELEMENT guild (#PCDATA)>
+<!ELEMENT quota (#PCDATA)>
+
+<!ELEMENT rank (#PCDATA)>
+<!ATTLIST rank
+  type (highscore_global|highscore_warrior|highscore_wizard|achievement_global|achievement_warrior|achievement_wizard|pvp|guild) #REQUIRED
+>
+
+<!ELEMENT guild (exppoints, rank)>
+<!ATTLIST guild
+  name CDATA #REQUIRED
+>
+
+<!ELEMENT name (#PCDATA)>
+<!ELEMENT exppoints (#PCDATA)>
