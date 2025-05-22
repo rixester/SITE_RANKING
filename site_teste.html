@@ -1,1199 +1,229 @@
-<html>
-  <head>
-    <title>Tibiame Brasil></title>
-  </head>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>Mapa Interativo com Controle Avançado</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Leaflet Control Layers Tree CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.control.layers.tree/L.Control.Layers.Tree.css" />
   <style>
-	.container {
-		display: flex;
-		justify-content: space-around;
-	}
-	
-	.left-table, .right-table {
-		width: 20%; /* Ajuste a largura conforme necessário */
-		/* Estilos adicionais para suas tabelas */
-	}
-	
-	.main-content {
-		width: 50%; /* Ajuste a largura conforme necessário */
-		/* Estilos adicionais para o conteúdo principal */
-	}
-	
-	header, footer {
-		/* Estilos para seu cabeçalho e rodapé */
-	}
-	
-	
-	#menuBuscador {
-				position: relative;
-				/* LARGURA DO MENU */
-				width:1200px;
-				margin-left: 0;
-				margin-right: 0px;
-				height: 45px; /* ALTURA DO MENU */
-				padding-left: 0px;
-				background: #5b4255; /* COR DE FUNDO DO MENU*/
-				}
-
-	.menusearch {
-				padding:0;
-				margin:0;
-				list-style:none;
-				position:relative;
-				z-index:5;
-				font-family: Pacifico; /* TIPO DE FONTE */
-				}
-	.menusearch li:hover li a {
-							background:none;
-		}
-	.menusearch li.top {display:block; float:left;}
-	.menusearch li a.top_link {
-								display:block;
-								float:left;
-								height:45px; /* ALTURA DO MENU, MANTENHA COMO ACIMA */
-								line-height:45px;
-								color:#fff; /* COR DOS TÍTULOS */
-								text-decoration:none;
-								font-size:24px; /* TAMANHO DA FONTE */
-								padding:0 0 0px 2px;
-								cursor:pointer;
-								}
-.menusearch li a.top_link span {
-								float:left;
-								display:block;
-								padding:0 24px 0 12px;
-								height:45px;
-								}
-.menusearch li a.top_link span.down {
-									float:left;
-									display:block;
-									padding:0 24px 0 12px;
-									height:45px;
-									}
-.menusearch li a.top_link:hover, .menusearch li:hover > a.top_link {color:#66b2b2; /* COR DO LINK */}
-.menusearch li:hover {position:relative; z-index:2;}
-.menusearch ul,
-.menusearch li:hover ul ul,
-.menusearch li:hover ul li:hover ul ul,
-.menusearch li:hover ul li:hover ul li:hover ul ul,
-.menusearch li:hover ul li:hover ul li:hover ul li:hover ul ul
-{position:absolute; left:-9999px; top:-9999px; width:0; height:0; margin:0; padding:0; list-style:none;}
-
-.menusearch li:hover ul.sub {
-left:0;
-top:45px;
-background:#f4f167; /* COR DE FUNDO DO SUBMENU */
-padding:3px;
-white-space:nowrap;
-width:270px; /* LARGURA DO SUBMENU */
-height:auto;
-z-index:3;
-}
-.menusearch li:hover ul.sub li {
-display:block;
-height:30px;
-position:relative;
-float:left;
-width:270px; /* LARGURA DO SUBMENU */
-font-weight:normal;
-}
-.menusearch li:hover ul.sub li a{
-display:block;
-height:30px;
-width:270px; /* LARGURA DO SUBMENU */
-line-height:30px;
-text-indent:5px;
-color:#000; /* COR DA FONTE DO SUBMENU */
-font-size:18px; /* TAMANHO DA FONTE DO SUBMENU */
-text-decoration:none;
-}
-.menusearch li ul.sub li a.fly {
-background:#eea990 url(https://1.bp.blogspot.com/-C6ti49nUaJQ/XbR2qlNwlyI/AAAAAAAAUwQ/zk0-0s_aHNkQFWxjcBoLAL3zVs24L2ovQCK4BGAYYCw/s400/indicator_listitemarrow_100.png) 250px 5px no-repeat;}
-.menusearch li:hover ul.sub li a:hover {
-background:#42c82f; /* COR DE FUNDO HOVER*/
-color:#000; /* COR DE FONTE HOVER*/
-}
-.menusearch li:hover ul.sub li a.fly:hover, .menusearch li:hover ul li:hover > a.fly {
-/* Color de fondo al pasar el cursor */
-background:#eea990 url(https://1.bp.blogspot.com/-C6ti49nUaJQ/XbR2qlNwlyI/AAAAAAAAUwQ/zk0-0s_aHNkQFWxjcBoLAL3zVs24L2ovQCK4BGAYYCw/s400/indicator_listitemarrow_100.png) 250px 10px no-repeat;
-color:#000;/* COR DE FONTE HOVER*/}
-
-.menusearch li:hover ul li:hover ul,
-.menusearch li:hover ul li:hover ul li:hover ul,
-.menusearch li:hover ul li:hover ul li:hover ul li:hover ul,
-.menusearch li:hover ul li:hover ul li:hover ul li:hover ul li:hover ul {
-left:200px;
-top:-4px;
-background: #f4f167; /* COR DE FUNDO DO SUBMENU */
-padding:3px;
-white-space:nowrap;
-width:270px; /* LARGURA DO SUBMENU */
-z-index:4;
-height:auto;
-}
-
-
+    body { margin: 0; padding: 0; }
+    #map { height: 100vh; width: 100vw; }
+    #filtro {
+      position: absolute;
+      top: 10px;
+      left: 50px;
+      z-index: 1000;
+      background: white;
+      padding: 6px;
+      border-radius: 6px;
+      box-shadow: 0 0 4px rgba(0,0,0,0.3);
+    }
   </style>
+</head>
 <body>
-    <header>
- <!-- Seu cabeçalho aqui -->
-  <img height='200'  width='1200'src='https://1.bp.blogspot.com/-sppIsrrynWY/YdszwZcgp3I/AAAAAAAAJ_0/sbVC3M_VnXs3Z8isznKNBe3dNK_JlwKzQCNcBGAsYHQ/s1220/logocenter.png'/>
-<div id='menuBuscador'>
-<ul class='menusearch'>
-<li class='top'><a class='top_link'><span class='down'>MENU</span></a>
-<ul class='sub'>
-    <li><a href='http://tibiamebrasilbr.blogspot.com/p/inicio.html'>INICIO</a></li>
-    <li><a href='http://payments.cipsoft.com/tibiame/?section=payment'>PREMMY/PLATINA</a></li>
-    <li><a href='http://www.tibiame.com/?section=download'>BAIXAR</a></li>
-    <li><a href='http://tibiamebrasilbr.blogspot.com/2018/01/FAQ.html'>DUVIDAS FREQUENTES</a></li>
-    <li><a href='http://www.tibiame.com/forum/index.php'>FORUM</a></li>
-    <li><a href='https://tibiamebrasilbr.blogspot.com/2018/09/sobre-tibiame.html'>O TIBIAME</a></li>
-    <li><a href='https://tibiamebrasilbr.blogspot.com/2018/09/fansites.html'>FANSITES</a></li>
-	<li><a href='https://tibiamebrasilbr.blogspot.com/2019/04/problemas-tecnicos.html'>PROBLEMAS TECNICOS</a></li>
-	<li><a href='http://tibiamebrasilbr.blogspot.com/2018/01/noticias.html'>NOTICIAS</a></li>
-	</ul></li>	
-
-<li class='top'><a class='top_link'><span class='down'>GERAL</span></a>
-<ul class='sub'>
-    <li><a href='https://tibiamebrasilbr.blogspot.com/2018/01/contato.html'>CONTATO</a></li>
-    <li><a href='https://tibiamebrasilbr.blogspot.com/2018/01/experiencia.html'>TABELA DE EXPERIENCIA</a></li>
-    <li><a href='https://tibiamebrasilbr.blogspot.com/2018/01/stamina.html'>CALCULADORA DE STAMINA</a></li>
-    <li><a href='https://tibiamebrasilbr.blogspot.com/2018/09/onde-cacar.html'>ONDE CAÇAR?</a></li>
-    <li><a href='http://tibiamebrasilbr.blogspot.com/2018/01/magias.html'>MAGIAS</a></li>
-	<li><a class='fly'>SKILLS</a>
-		<ul>
-		<li><a href='https://tibiamebrasilbr.blogspot.com/2018/01/skills-warrior.html'><img border='0' data-original-height='20' data-original-width='20' src='https://4.bp.blogspot.com/-f0CLCOcy458/Wwl-_R1FVXI/AAAAAAAAOIw/R12pIBEV-0E34kSe2HvOpwPDI2s-7tkJQCLcBGAs/s1600/videotogif_2018.05.26_12.34.36.gif' style='text-align: center;'/>WARRIOR</a></li>
-    <li><a href='http://tibiamebrasilbr.blogspot.com/2018/01/skills-wizard.html'><img border='0' data-original-height='20' data-original-width='20' src='https://4.bp.blogspot.com/-HonHNzTy3Zg/WwlcQ6yRdRI/AAAAAAAAOIY/Uf1JpHaW-JYCqC4Wvr1VSUNQPHJXgWfyACLcBGAs/s1600/wizardmale.gif' style='color: #11084c; text-align: center;'/>WIZARD</a></li></ul></li>
-	<li><a href='https://tibiamebrasilbr.blogspot.com/2018/01/pets.html'>PETS</a></li>
-	<li><a href='https://tibiamebrasilbr.blogspot.com/2018/09/ferreiros.html'>FERREIROS</a></li>
-	<li><a href='https://tibiamebrasilbr.blogspot.com/2018/01/mapas.html'>ILHAS</a></li>
-	<li><a class='fly'>ESTRELAS</a>
-			<ul>
-			<li><a href='https://www.youtube.com/watch?v=D9wTf41WLe0'>114-Ashmor</a></li>
-			<li><a href='https://www.youtube.com/watch?v=WN9ehm9Zwe0'>168-Aurea</a></li>
-			<li><a href='https://www.youtube.com/watch?v=9ulXFXKMPEA'>239-Banuna</a></li>
-			<li><a href='https://www.youtube.com/watch?v=27gAbyY2KtA'>004-Circusia</a></li>
-			<li><a href='https://www.youtube.com/watch?v=WAgK1F0oANg'>066-Doratia</a></li>
-			<li><a href='https://www.youtube.com/watch?v=JoiPR3axjJo'>089-Ephialtis</a></li>
-			<li><a href='https://www.youtube.com/watch?v=VhvYS3eMEH4'>106-Erebos</a></li>
-			<li><a href='https://www.youtube.com/watch?v=a1Bm4dIRNJg'>177-Fabulara</a></li>
-			<li><a href='https://www.youtube.com/watch?v=x-YysW-LEcA'>033-Gorgoros</a></li>
-			<li><a href='https://www.youtube.com/watch?v=zfSrC4RTHG0'>103-Hunterra</a></li>
-			<li><a href='https://www.youtube.com/watch?v=FfQNCNZcDCY'>045-Lybera</a></li>
-			<li><a href='https://www.youtube.com/watch?v=elmO6nGcnzs'>053-Maleisla</a></li>
-			<li><a href='https://www.youtube.com/watch?v=hiO4jnX6bIs'>004-PVP Island</a></li>
-			<li><a href='https://www.youtube.com/watch?v=oD5jAKhC0nA'>040-Riftion</a></li>
-			<li><a href='https://www.youtube.com/watch?v=qN8mGxNHDuI'>125-Solahmar</a></li>
-			<li><a href='https://www.youtube.com/watch?v=33cB4U7qbuk'>011-Ilha do Oraculo</a></li>
-			<li><a href='https://www.youtube.com/watch?v=VHNuJekl_1s'>108-St.Nivalis</a></li>
-			<li><a href='https://www.youtube.com/watch?v=Cl2xeWNSGck'>075-Starfish Island</a></li>
-			<li><a href='https://www.youtube.com/watch?v=60JRzwhl1TE'>061-Treasure Island</a></li>
-			<li><a href='https://www.youtube.com/watch?v=ilMUUFgFks8'>020-Vargos</a></li>
-			<li><a href='https://www.youtube.com/watch?v=8Yi22iE8d7Q'>098-Yabutu</a></li>
-			<li><a href='https://youtu.be/bQB9slCBgdo'>43-Under Water</a></li>
-			<li>TOTAL=1773</li>
-    </ul>
-</li>
-<li>
-<a href='https://tibiamebrasilbr.blogspot.com/2018/01/potions.html'>POTIONS</a></li>
-    <li><a href='https://tibiamebrasilbr.blogspot.com/2018/01/itens.html'>ITENS</a></li>
-	<li><a href='https://tibiamebrasilbr.blogspot.com/2018/12/BETA2019.html'>BETA 2019</a></li>
-	<li><a href='https://tibiamebrasilbr.blogspot.com/2018/06/recuperacao-de-conta.html'>RECUPERAR CONTA BANIDA(BUG PLAT)</a></li>
-    </ul></li>
-
- <li class='top'><a class='top_link'><span class='down'>MONSTROS</span></a>
-        <ul class='sub'>
-        <li><a href='http://tibiamebrasilbr.blogspot.com/2011/01/monstros.html'>NORMAIS</a></li>
-        <li><a href='https://tibiamebrasilbr.blogspot.com/2018/01/raid.html'>RAID</a></li>
-        <li><a class='fly'>BOSS</a>
-        <ul>
-        <li><a class='fly'>ASHMOR</a>
-                     <ul>
-                     <li><a href='http://tibiamebrasilbr.blogspot.com/2018/01/azael.html'><img border='0' data-original-height='480' data-original-width='480' height='30' src='https://1.bp.blogspot.com/-hl7iib6VFGY/Wzhtp0jGE-I/AAAAAAAAP3I/MzoD2FkL-A8pFYRq23iV33d9xR_k1Xu0QCLcBGAs/s200/Azael.gif' width='30'/>AZAEL</a></li>
-                     <li><a href='http://tibiamebrasilbr.blogspot.com/2018/01/3-dogs.html'><img border='0' data-original-height='480' data-original-width='480' height='30' src='https://2.bp.blogspot.com/-XzzYUeyWdUo/Wzhttupl46I/AAAAAAAAP3Y/ZddAXqnYlgggX6CBNjQ6RUTARDW8WFkGACLcBGAs/s200/Buffy.gif' width='30'/>3 DOGS</a></li>
-                     <li><a href='http://tibiamebrasilbr.blogspot.com/2018/01/horning.html'><img border='0' data-original-height='480' data-original-width='480' height='30' src='https://2.bp.blogspot.com/-6LlhSuY5dZI/Wzht2IkRRoI/AAAAAAAAP38/ncw0VDTqHK85Pwx4gtBrb0JJziOMUGLVwCLcBGAs/s200/Hornig.gif' width='30'/>HORNING</a></li>
-                     <li><a href='http://tibiamebrasilbr.blogspot.com/2018/01/igor.html'><img border='0' data-original-height='480' data-original-width='480' height='30' src='https://1.bp.blogspot.com/-HyldCZ2FHRY/Wzht2V5OVDI/AAAAAAAAP4A/xBm8tWlIWZI235IA8oGLoUY5BCYwKROdgCLcBGAs/s200/Igor.gif' width='30'/>IGOR</a></li>
-                     <li><a href='http://tibiamebrasilbr.blogspot.com/2018/01/nekrion.html'><img border='0' data-original-height='480' data-original-width='480' height='30' src='https://1.bp.blogspot.com/-x5GaGVSXSqA/Wzht5aehC2I/AAAAAAAAP4M/13e35JqJNZAv-5t9r3svcJVUAsWEOjhwgCLcBGAs/s200/Nekrion.gif' width='30'/>NEKRION</a></li>
-                      </ul>
-                      </li>
-
-         <li><a class='fly'>AUREA</a>
-                     <ul>
-                     <li><a href='http://tibiamebrasilbr.blogspot.com/2018/01/bragnak.html'><img border='0' data-original-height='480' data-original-width='480' height='30' src='https://2.bp.blogspot.com/-_UsZUmzBXcM/Wzhtq0GkhGI/AAAAAAAAP3Q/ad8z7RThC5QQQh5RAzKuqjGM4-cUHim2ACLcBGAs/s200/Bragnak.gif' width='30'/>BRAGNAK</a></li>
-                     <li><a href='https://www.youtube.com/watch?v=2nOpShvLj0s'>CARNEIRO</a></li>
-                     <li><a href='https://www.youtube.com/watch?v=2nOpShvLj0s'>HEXANA</a></li>
-                      </ul>
-                      </li>
-
-         <li><a class='fly'>BANUNA</a>
-                     <ul>
-                     <li><a href='http://tibiamebrasilbr.blogspot.com/2018/01/avarro.html'>
-<img border='0' data-original-height='480' data-original-width='480' height='30' src='https://3.bp.blogspot.com/-TLgRL46ggSY/WzhtpgzNQ3I/AAAAAAAAP3E/zh9Xclk8dms2rSbnkYLZHs5AljzCaxhcQCLcBGAs/s200/Avarro.gif' width='30'/>AVARRO E GONIUS</a></li>
-                      </ul>
-                      </li>
-
-         <li><a class='fly'>CASTLE ROCK</a>
-                     <ul>
-                     <li><a href='https://www.youtube.com/watch?v=umu7J88w184'>ALTENOR</a></li>
-                      </ul>
-                      </li>
-
-         <li><a class='fly'>DORATIA</a>
-                     <ul>
-                     <li><a href='http://tibiamebrasilbr.blogspot.com/2018/01/everdragon.html'>EVERDRAGON</a></li>
-                      </ul>
-                      </li>
-
-         <li><a class='fly'>EPHIALTIS</a>
-                     <ul>
-                     <li><a href='http://tibiamebrasilbr.blogspot.com/2018/01/amorpheon.html'><img border='0' data-original-height='480' data-original-width='480' height='30' src='https://2.bp.blogspot.com/-TE-g40Z5AA4/WzhtmwCaVOI/AAAAAAAAP3A/6g6jlPdSAC8JhO-TVWE65yMgyziCFUQOwCLcBGAs/s200/Amorpheon.gif' width='30'/>AMORPHEON</a></li>
-                     <li><a href='http://tibiamebrasilbr.blogspot.com/2018/01/mutabor.html'>
-<img border='0' data-original-height='480' data-original-width='480' height='30' src='https://4.bp.blogspot.com/-ssbRdoJtS0Q/Wzht3hS3ruI/AAAAAAAAP4I/F3QSmGnqzkUA3QlROsXJysVXC45-HMiRgCLcBGAs/s200/Mutabor.gif' width='30'/>MUTABOR</a></li>
-                      </ul>
-                      </li>
-
-
-         <li><a class='fly'>EREBOS</a>
-                     <ul>
-                     <li><a href='http://tibiamebrasilbr.blogspot.com/2018/01/biestig.html'><img border='0' data-original-height='480' data-original-width='480' height='30' src='https://3.bp.blogspot.com/-JNwbmzBTKD4/Wzhtp5iFgzI/AAAAAAAAP3M/uoAJu2XoNiI6rkDdzKdNFPe2FJEpFkJrgCLcBGAs/s200/Biestig.gif' width='30'/>BIESTING</a></li>
-                      </ul>
-                      </li>
-
-         <li><a class='fly'>FABULARA</a>
-                     <ul>
-                     <li><a href='http://tibiamebrasilbr.blogspot.com/2018/01/oakvine.html'><img border='0' data-original-height='480' data-original-width='480' height='30' src='https://2.bp.blogspot.com/-cLaUEQhfKA4/Wzht5rrqsII/AAAAAAAAP4Q/X4Xkk-bE_k8eJcMajVwtJGg8oD3_moANACLcBGAs/s200/Oakvine.gif' width='30'/>OAKVINE</a></li>
-                      </ul>
-                      </li>
-
-         <li><a class='fly'>NIVALIS</a>
-                     <ul>
-                     <li><a href='http://tibiamebrasilbr.blogspot.com/2018/01/frostisso.html'>
-<img border='0' data-original-height='480' data-original-width='480' height='30' src='https://3.bp.blogspot.com/-pYFBblHb1F0/WzhtxpVzFMI/AAAAAAAAP3s/RQS7uyE-gxkZRQSaYP1cmpvAYRqXw1m8ACLcBGAs/s200/Frostisso.gif' width='30'/>FROSTISSO</a></li>
-                      </ul>
-                      </li>
-
-
-         <li><a class='fly'>RIFTION</a>
-                     <ul>
-                     <li><a href='http://tibiamebrasilbr.blogspot.com/2018/01/tentacull.html'><img border='0' data-original-height='480' data-original-width='480' height='30' src='https://4.bp.blogspot.com/-LCwFneR1Fc0/Wzht9G9ZMcI/AAAAAAAAP4g/2KCfuBe3OW0Q5cbuRFLNHePfIGg5Leu3ACLcBGAs/s200/Ten%2527ta%2527cul.gif' width='30'/>TEN&#39;TA&#39;CUL</a></li>&gt;
-                      </ul>
-                      </li>
-
-         <li><a class='fly'>SOLAHMAR</a>
-                     <ul>
-                     <li><a href='http://tibiamebrasilbr.blogspot.com/2018/01/akrates.html'><img border='0' data-original-height='480' data-original-width='480' height='30' src='https://1.bp.blogspot.com/-6DASCe9HVZk/Wzhtl0P978I/AAAAAAAAP24/1WhRjNX-GWAZbyxwAAAWDWQFwBBsgdJ-ACLcBGAs/s200/Akrathes.gif' width='30'/>AKRATES</a></li>
-                      </ul>
-                      </li>
-
-         <li><a class='fly'>VARGOS</a>
-                     <ul>
-                     <li><a href='http://tibiamebrasilbr.blogspot.com/2018/01/crush.html'><img border='0' data-original-height='480' data-original-width='480' height='30' src='https://3.bp.blogspot.com/-iC9r2DgSJv0/WzhtxEgMRYI/AAAAAAAAP3k/Iyw6da_MhDQqVXCWyARE-0M8qgWiJdyoQCLcBGAs/s200/Crush.gif' width='30'/>CRUSH</a></li>
-                     <li><a href='http://tibiamebrasilbr.blogspot.com/2018/01/oculos.html'><img border='0' data-original-height='480' data-original-width='480' height='30' src='https://1.bp.blogspot.com/-rQ8SPn41_Xo/Wzht6N4-BrI/AAAAAAAAP4U/cK6GyBgiX10zW70p3_Sku5yy2NBVN974QCLcBGAs/s200/Oculus.gif' width='30'/>OCULOS</a></li>
-                     <li><a href='http://tibiamebrasilbr.blogspot.com/2018/01/arkanis.html'><img border='0' data-original-height='480' data-original-width='480' height='30' src='https://4.bp.blogspot.com/--gXT40mgFS8/WzhtmavVpkI/AAAAAAAAP5M/0Z2yVjrfeMg1w_c3doRRlFmOmuqCfUfLwCEwYBhgL/s320/Arkanis.gif' width='30'/>ARKANIS</a></li>
-                     <li><a href='http://tibiamebrasilbr.blogspot.com/2018/01/hieronymos.html'><img border='0' data-original-height='480' data-original-width='480' height='30' src='https://2.bp.blogspot.com/-n0KWEIqzjo0/Wzht0V3cjLI/AAAAAAAAP34/9e3dt7ScrtQdszWlngsFd2KVO-mMjTx8gCLcBGAs/s200/Hieronymus.gif' width='30'/>HIERONYMUS</a></li>
-                      </ul>
-                      </li>
-
-         <li><a class='fly'>YABUTO</a>
-                     <ul>
-                     <li><a href='http://tibiamebrasilbr.blogspot.com/2018/01/chilong-30.html'><img border='0' data-original-height='480' data-original-width='480' height='30' src='https://4.bp.blogspot.com/-uvdfyu87ZHY/WzhttnOFNmI/AAAAAAAAP3U/_zlKp_s87T4nEGmxDZuK5Y76mtLNZUmrQCLcBGAs/s200/Chiling-Easy.gif' width='30'/>CHILONG 30+</a></li>
-                     <li><a href='http://tibiamebrasilbr.blogspot.com/2018/01/chilong-70.html'><img border='0' data-original-height='480' data-original-width='480' height='30' src='https://1.bp.blogspot.com/--E5mi-rPE44/Wzhtu-0e0rI/AAAAAAAAP3g/hS8lGLTK1sAY3XdwnIv_cN3LY2CaansagCLcBGAs/s200/Chilong-Hard.gif' width='30'/>CHILONG 70+</a></li>
-                      </ul></li>
-
-</ul></li></ul></li>
-
-<li class='top'><a class='top_link'><span>QUEST</span></a>
-<ul class='sub'>
-<li><a class='fly'>TODAS AS QUESTS</a><ul>
-<li><a href='https://www.youtube.com/watch?v=dNnYCE4_a6k'>ASHMOR</a></li>
-<li><a href=' '>AUREA</a></li>
-<li><a href='https://www.youtube.com/watch?v=u0RnyiE4j7A'>BANUNA</a></li>
-<li><a href='https://www.youtube.com/watch?v=_M9OvSJq7b0'>DORATIA</a></li>
-<li><a href=' '>EPHIALHIS</a></li>
-<li><a href=' '>EREBOS</a></li>
-<li><a href='https://www.youtube.com/watch?v=bLVcJbAwGXE'>FABULARA</a></li>
-<li><a href='https://www.youtube.com/watch?v=Dr54dTOMEig'>GORGOROS</a></li>
-<li><a href=' '>HUNTERRA</a></li>
-<li><a href='https://www.youtube.com/watch?v=Xx3heVztxuI'>LYBERA</a></li>
-<li><a href='https://www.youtube.com/watch?v=dQDarBIcmzc'>NIVALIS</a></li>
-<li><a href=' '>MALEISLA</a></li>
-<li><a href='https://www.youtube.com/watch?v=zeP-7oFSg18'>RIFTION</a></li>
-<li><a href='https://www.youtube.com/watch?v=CccJ27xscRY'>SOLAHMAR</a></li>
-<li><a href='https://www.youtube.com/watch?v=1ZPwImocriQ'>STARFISH</a></li>
-<li><a href=' '>TRESOURE</a></li>
-<li><a href=' '>VARGOS</a></li>
-<li><a href='https://www.youtube.com/watch?v=7lcTO4Jz-Yk'>YABUTO</a></li>
-<li><a href='https://www.youtube.com/watch?v=bQB9slCBgdo'>UNDER WATER</a></li>
-
-  ------
-  
-  </ul></li>
-<li><a class='fly'>ASHMOR - 40</a><ul>
-<li><a href='https://www.youtube.com/watch?v=gQrl1-xqN_M'>A abóbora Morighan</a></li>
-<li><a href='https://www.youtube.com/watch?v=mU75r923dXc'>A audiência	</a></li>
-<li><a href='https://www.youtube.com/watch?v=zFdlVjnCopY'>A bruxa invisível</a></li>
-<li><a href='https://www.youtube.com/watch?v=0folQ9_gHvI'>A primeira pista</a></li>
-<li><a href='https://www.youtube.com/watch?v=0folQ9_gHvI'>A segunda pista</a></li>
-<li><a href='https://www.youtube.com/watch?v=0folQ9_gHvI'>A terceira pista</a></li>
-<li><a href='https://www.youtube.com/watch?v=0folQ9_gHvI'>A quarta pista</a></li> 
-<li><a href='https://www.youtube.com/watch?v=CPOo6Pj7Jo8'>A vassoura vroom</a></li>
-<li><a href='https://www.youtube.com/watch?v=FCKDtkxHPlE'>Alarme falso</a></li>
-<li><a href='https://www.youtube.com/watch?v=xmul4GtIvBE'>Amigos Para Sempre</a></li>
-<li><a href='https://www.youtube.com/watch?v=dP_kkw0ShF4'>Aparições Fantasmas</a></li>
-<li><a href='https://www.youtube.com/watch?v=U7ruq9XBNdA'>Café-da-manha</a></li>
-<li><a href='https://www.youtube.com/watch?v=0folQ9_gHvI'>Chuva E Tempestade</a></li>
-<li><a href='https://www.youtube.com/watch?v=6eDBujrl9P0'>Desbastando As Linhas</a></li>
-<li><a href='https://www.youtube.com/watch?v=27nJOaPhqlQ'>Encontre As Origens</a></li>
-<li><a href='https://www.youtube.com/watch?v=Kky8GR6F8YA'>Eu Atirei No Xerife</a></li>
-<li><a href='https://www.youtube.com/watch?v=J2-6Z1fF-bE'>Hora De Estudar</a></li>
-<li><a href='https://www.youtube.com/watch?v=RVj5RmRyibs'>Infestando Ines</a></li>
-<li><a href='https://www.youtube.com/watch?v=zFdlVjnCopY'>Invisibilidade</a></li>
-<li><a href='https://www.youtube.com/watch?v=BefggYV4Ohc'>Lacrando Os Portais</a></li>
-<li><a href='https://www.youtube.com/watch?v=C2LE2A91XGg'>Limpador De Castelo</a></li>
-<li><a href='https://www.youtube.com/watch?v=QEOj1spgeEw'>Missão:Ashmor</a></li>
-<li><a href='https://www.youtube.com/watch?v=a-GXDiVODUk'>O Clima De Heather</a></li>
-<li><a href='https://www.youtube.com/watch?v=POncuKh1ffc'>O Encontro</a></li>
-<li><a href='https://www.youtube.com/watch?v=0folQ9_gHvI'>O Enigma</a></li>
-<li><a href='https://www.youtube.com/watch?v=Bk8UQvgGk5M'>O Mapa Sellman</a></li>
-<li><a href='https://www.youtube.com/watch?v=hirfsnSkl5c'>O Shimmelrider</a></li>
-<li><a href='https://www.youtube.com/watch?v=S7xQA0SbOKM'>Os Spiritecs</a></li>
-<li><a href='https://www.youtube.com/watch?v=Z-6Epmrggwk'>Pegando Fantasma</a></li>
-<li><a href='https://www.youtube.com/watch?v=prLIuRsaLb4'>Porteiro</a></li>
-<li><a href='https://www.youtube.com/watch?v=gbqvKBCyiOw'>Precisando De Fita?</a></li>
-<li><a href='https://www.youtube.com/watch?v=864w4xpVS68'>Pretenso Acolyte</a></li>
-<li><a href='https://www.youtube.com/watch?v=tiaj9D7Fn3I'>Quebrando A Maldição</a></li>
-<li><a href='https://www.youtube.com/watch?v=BhTxCbtpFEw'>Sem Sono Em Ashmor</a></li>
-<li><a href='https://www.youtube.com/watch?v=qLC-Ao6-4rg'>Te Vejo</a></li>
-<li><a href='https://www.youtube.com/watch?v=-WIG3-OqdgQ'>Ultra Wakey</a></li>
-<li><a href='https://www.youtube.com/watch?v=dP_kkw0ShF4'>Um Coração Limpo</a></li>
-<li><a href='https://www.youtube.com/watch?v=W7MX0G7bsSA'>Uma Grande Corrida</a></li>
-<li><a href='https://www.youtube.com/watch?v=7Srf2WIpqes'>Uma Viagem A Ashmor</a></li>
-<li><a href='https://www.youtube.com/watch?v=2isral-t1hk'>Vejo Pessoas Mortas</a></li></ul></li>
-
-<li><a class='fly'>AUREA - 63</a>
-
-<ul>                
-<li><a href='https://www.youtube.com/watch?v=8BGXgM5-fus'>A Irmandade Secreta</a></li>
-<li><a href='https://www.youtube.com/watch?v=T3oLVYsq19s'>Abaixo Das Dunas</a></li>
-<li><a href='https://www.youtube.com/watch?v=Ij2W1uqaIK4'>Acabou A Madeira</a></li>
-<li><a href='https://www.youtube.com/watch?v=g4B_F7QjFjE'>As Pequenas Coisas</a></li>
-<li><a href='https://www.youtube.com/watch?v=Y3ILoDwLFQY'>Ataque Orc! Nao!</a></li>
-<li><a href='https://www.youtube.com/watch?v=wtwWg8yalow'>Bewarehouse!</a></li>
-<li><a href=' '>Boa Noite, Orc!</a></li>
-<li><a href='https://www.youtube.com/watch?v=9_EvwS0_SlI'>Boa Safra De Trigo</a></li>
-<li><a href='https://www.youtube.com/watch?v=bQps12c1zCM'>Bovinophobia</a></li>
-<li><a href='https://www.youtube.com/watch?v=Fpbb0otiqX0'>Carta De Direitos</a></li>
-<li><a href='https://www.youtube.com/watch?v=9_EvwS0_SlI'>Comidas Para Tropas</a></li>
-<li><a href='https://www.youtube.com/watch?v=xtrlDMXHQZE'>Criador De Monstros</a></li>
-<li><a href='https://www.youtube.com/watch?v=amTZeR33jf0'>Da Arma</a></li>
-<li><a href='https://www.youtube.com/watch?v=vYatQdDG7B4'>Dois Vizinhos</a></li>
-<li><a href='https://www.youtube.com/watch?v=GhYx9JMDEGY'>Feira De Vaidades</a></li>
-<li><a href='https://www.youtube.com/watch?v=Ux1GN_1fYyE'>Flotsam and Jetsam</a></li>
-<li><a href='https://www.youtube.com/watch?v=zFdlVjnCopY'>Invisibility</a></li>
-<li><a href='https://www.youtube.com/watch?v=5jSfeQGcXuc'>Magos Antigos</a></li>
-<li><a href='https://www.youtube.com/watch?v=CwxjyxB4pBs'>Minerio De Syorta</a></li>
-<li><a href='https://www.youtube.com/watch?v=ilMUUFgFks8'>O Mago louco</a></li>
-<li><a href='https://www.youtube.com/watch?v=YpOoi7BjyY4'>Revisitando Sontus</a></li>
-<li><a href='https://www.youtube.com/watch?v=L84buRiL34c'>Um Novo Caminho</a></li>
-<li><a href='https://www.youtube.com/watch?v=3XPBeGbH3Rs'>Um Problema meu</a></li>
-<li><a href='https://www.youtube.com/watch?v=uifqRSki8sg'>Uma Nova Jornada</a></li>
-<li><a class='fly'>CARNAVAL</a>
-<ul>
-<li><a href='https://www.youtube.com/watch?v=LotKwFJY_uY'>O Baile De Mascaras</a></li>
-<li><a href='https://www.youtube.com/watch?v=LotKwFJY_uY'>Unmasked</a></li>
-</ul></li>
-
-<li><a class='fly'>PETS</a>
-<ul>
-<li><a href='https://www.youtube.com/watch?v=p8Sc1-qn5HE'>Bats</a></li>
-<li><a href=' '>Bears</a></li>
-<li><a href='https://www.youtube.com/watch?v=7N7PcvPHmM0'>Blackdrake</a></li>
-<li><a href=' '>Bloodflies</a></li>
-<li><a href=' '>BoneDragon</a></li>
-<li><a href=' '>Crocodiles</a></li>
-<li><a href='https://www.youtube.com/watch?v=BerOBXcSA5s'>Drake</a></li>
-<li><a href='https://www.youtube.com/watch?v=QffRZCSYFFE'>Dragon</a></li>
-<li><a href=' '>Eyes</a></li>
-<li><a href=' '>Hornets</a></li>
-<li><a href=' '>Ice Bears</a></li>
-<li><a href='https://www.youtube.com/watch?v=pMr4pvPL6_g'>Ice Dragon</a></li>
-<li><a href='https://www.youtube.com/watch?v=1MrrFMYrvYE'>Long</a></li>
-<li><a href=' '>Mantises</a></li>
-<li><a href=' '>Pet of darkness</a></li>
-<li><a href='https://www.youtube.com/watch?v=fMBH7PykY7g'>Phoenix</a></li>
-<li><a href=' '>Sabrecats</a></li>
-<li><a href='https://www.youtube.com/watch?v=H6-dLt_Gthw'>Scorpions</a></li>
-<li><a href=' '>Skonkey</a></li>
-<li><a href='https://www.youtube.com/watch?v=HUntlzSM9kM'>Spirit Catcher</a></li>
-<li><a href='https://www.youtube.com/watch?v=rnUY-_EvwQ4'>Taming My First Pet</a></li>
-<li><a href=' '>Terrorbirds</a></li>
-<li><a href=' '>Trolls</a></li>
-<li><a href='https://www.youtube.com/watch?v=rnUY-_EvwQ4'>Wolves</a></li>
-<li><a href=' '>Yetis</a></li>
-</ul></li>
-<li><a class='fly'>SUMMERFEAST</a>
-<ul>
-<li><a href='https://www.youtube.com/watch?v=SDeS33O_X0Y'>Preliminares</a></li>
-<li><a href='https://www.youtube.com/watch?v=SDeS33O_X0Y'>Misplaced</a></li>
-<li><a href='https://www.youtube.com/watch?v=SDeS33O_X0Y'>Feast Preparation</a></li>
-<li><a href='https://www.youtube.com/watch?v=SDeS33O_X0Y'>Mirror of Sunna</a></li>
-<li><a href='https://www.youtube.com/watch?v=SDeS33O_X0Y'>Blessed Fields</a></li>
-<li><a href='https://www.youtube.com/watch?v=SDeS33O_X0Y'>Light Of Truth</a></li>
-<li><a href='https://www.youtube.com/watch?v=SDeS33O_X0Y'>Enlightenment</a></li>
-<li><a href='https://www.youtube.com/watch?v=SDeS33O_X0Y'>Burning Fire</a></li>
-<li><a href='https://www.youtube.com/watch?v=SDeS33O_X0Y'>USE TOKENS</a></li>
-</ul></li>
-<li><a class='fly'>DARKMOON&#39;S EVE</a>
-<ul>
-<li><a href='https://tibiamebrasilbr.blogspot.com/2018/10/darkmoons-eve.html'>A WITCHES SECRETS</a></li>
-</ul></li>
-<li><a class='fly'>WINTERFEAST</a>
-<ul>
-<li><a href='https://www.youtube.com/watch?v=xwpyVdUy5As'>Siga as pistas</a></li>
-<li><a href='https://www.youtube.com/watch?v=lxP4INL1Jvk'>A adaga dansçante</a></li>
-<li><a href='https://www.youtube.com/watch?v=G1OXtr88UTg'>A cartomante</a></li>
-<li><a href='https://www.youtube.com/watch?v=L714OXOd6Bk'>A porção de amor</a></li>
-<li><a href='https://www.youtube.com/watch?v=9QgFYZFWj4Y'>Hora da sedução</a></li>
-<li><a href='https://www.youtube.com/watch?v=1gSmDbSVilc'>Ladrão trabalha</a></li>
-</ul></li>
-   </ul></li>
-
-
-
-<li><a class='fly'>BANUNA - 33</a>
-<ul>       
-<li><a href='https://www.youtube.com/watch?v=5wjh0qdudEc'>A Banner for Aurea</a></li>
-<li><a href='https://www.youtube.com/watch?v=CEYFqqyPpTg'>A Iniciação</a></li>
-<li><a href='https://www.youtube.com/watch?v=zZB51Btljrc'>A Melhor Piada</a></li>
-<li><a href='https://www.youtube.com/watch?v=afpM5EEaiAg'>A Princesa Sumiu</a></li>
-<li><a href='https://www.youtube.com/watch?v=vci2b-NhKck'>Beach Patrol</a></li>
-<li><a href='https://www.youtube.com/watch?v=e7RKOzP1G40'>Chamber of Creation</a></li>
-<li><a href='https://www.youtube.com/watch?v=u6nZCsCDAyI'>Creationism</a></li>
-<li><a href='https://www.youtube.com/watch?v=RJ0ZB3Ijs3Y'>Creators Temple</a></li>
-<li><a href='https://www.youtube.com/watch?v=GI9A5nZa1ZM'>Dangerous Numbers</a></li>
-<li><a href='https://www.youtube.com/watch?v=XED0XAB7GZI'>Expedition Lost</a></li>
-<li><a href='https://www.youtube.com/watch?v=N9zOpOoxdCU'>Eyes on Grog</a></li>
-<li><a href='https://www.youtube.com/watch?v=Zu1BPTl3YtA'>First Steps</a></li>
-<li><a href='https://www.youtube.com/watch?v=pQ3d2rYr6lM'>Flowing Energies</a></li>
-<li><a href='https://www.youtube.com/watch?v=9fcKtnYeJOE'>Freedom of the Ape</a></li>
-<li><a href='https://www.youtube.com/watch?v=9fcKtnYeJOE'>Fresh Air</a></li>
-<li><a href='https://www.youtube.com/watch?v=V20GQD6Rfq0'>Ghost of the Next</a></li>
-<li><a href='https://www.youtube.com/watch?v=V20GQD6Rfq0'>Ghost of the Now</a></li>
-<li><a href='https://www.youtube.com/watch?v=V20GQD6Rfq0'>Ghost of the Then</a></li>
-<li><a href='https://www.youtube.com/watch?v=Q8taEVy6KS0'>Goddess Judgement</a></li>
-<li><a href='https://www.youtube.com/watch?v=lSM_ilwK0T8'>Goddesses Temple</a></li>
-<li><a href='https://www.youtube.com/watch?v=ZuHV1Dym-To'>Golden Banana</a></li>
-<li><a href='https://www.youtube.com/watch?v=_8DTUygCwIA'>Home Improvement</a></li>
-<li><a href='https://www.youtube.com/watch?v=983nG-wV1Cc'>Investigations</a></li>
-<li><a href='https://www.youtube.com/watch?v=UyPbGhJaeBQ'>Jungle Calming</a></li>
-<li><a href='https://www.youtube.com/watch?v=ptjhrBHplpE'>Jungle Camp</a></li>
-<li><a href='https://www.youtube.com/watch?v=REUI_8yJ6Rw'>Petless</a></li>
-<li><a href='https://www.youtube.com/watch?v=J6kr87LEpNA'>Quid pro Quo</a></li>
-<li><a href='https://www.youtube.com/watch?v=nK_rrb4QWbI'>Ritualus Interruptus</a></li>
-<li><a href='https://www.youtube.com/watch?v=V20GQD6Rfq0'>Spirit World</a></li>
-<li><a href='https://www.youtube.com/watch?v=kQsON5zPtrY'>Stomach Rumbles</a></li>
-<li><a href='https://www.youtube.com/watch?v=Z5Hl34i9AN8'>Templo Esquecido</a></li>
-<li><a href='https://www.youtube.com/watch?v=TaXr6yO3d8c'>The Swampwitch</a></li>
-<li><a href='https://www.youtube.com/watch?v=zz7BntHMIBw'>Two Faced Temple</a></li>
-</ul></li>
-
-
-
-<li><a class='fly'>DORATIA - 11</a>
-<ul>       
-<li><a href='https://www.youtube.com/watch?v=CNdhpMPFzi4'>Bring it Down!</a></li>
-<li><a href='https://www.youtube.com/watch?v=nbQtI_wzvsU'>Down and Under</a></li>
-<li><a href='https://www.youtube.com/watch?v=wlhK-1KtpPY'>Ease and Preassure</a></li>
-<li><a href='https://www.youtube.com/watch?v=sOJpsc8BMgg'>Enter Doratia (Other quest)</a></li>
-<li><a href='https://www.youtube.com/watch?v=in_US7tvFp0'>Everdragon Cult</a></li>
-<li><a href='https://www.youtube.com/watch?v=LilYsTaLRAw'>Eyes for an Eye</a></li>
-<li><a href='https://www.youtube.com/watch?v=tLKR9wwxNLw'>Forgotten Ruins</a></li>
-<li><a href='https://www.youtube.com/watch?v=12aKxomQ6g8'>Hidden Away</a></li>
-<li><a href='https://www.youtube.com/watch?v=uXPaXqQsfUU'>Shake Foundations</a></li>
-<li><a href='https://www.youtube.com/watch?v=nVLZiH2VY_Y'>Stop it!</a></li>
-<li><a href='https://www.youtube.com/watch?v=sOJpsc8BMgg'>What&#39;s going on?</a></li>
-</ul></li>
-
-
-<li><a class='fly'>EPHIALTIS - 3</a>
-<ul>       
-<li><a href=' '>Elder Secrets(Amorpheon)</a></li>
-<li><a href='https://www.youtube.com/watch?v=wa-OC1VongU'>State of ephialtis</a></li>
-<li><a href=' '>Temple Of Bones(Mutabor)</a></li>
-</ul></li>
-
-
-<li><a class='fly'>EREBOS - 7</a>
-<ul>
-<li><a href='http://tibiamebrasilbr.blogspot.com/2017/01/carregue-mangueira.html'>Carregue A Mangueira</a></li>
-<li><a href='https://www.youtube.com/watch?v=OUYvGgOjWiQ'>Churrasco Infernal</a></li>
-<li><a href='https://www.youtube.com/watch?v=7RM7br2HJF0'>Ponto Quente</a></li>
-<li><a href='https://www.youtube.com/watch?v=FewfpbWxOo4'>Praga Três Cabeças</a></li>
-<li><a href='http://tibiamebrasilbr.blogspot.com/2017/01/torael.html'>Torael</a></li>
-<li><a class='fly'>BOSS 90</a>
-<ul><li><a href='http://tibiamebrasilbr.blogspot.com/2017/01/arena-of-flesh.html'>Arena Of Flesh</a></li></ul></li>
-<li><a class='fly'>PET</a>
-<ul><li><a href='https://www.youtube.com/watch?v=bzrNMVgmrEk'>Cerberus(pet)</a></li></ul></li>
-</ul></li>
-
-
-<li><a class='fly'>FABULARA - 21</a>
-<ul>       
-<li><a href='https://www.youtube.com/watch?v=H86zIF79-Pc'>Bela Adormecida</a></li>
-<li><a href='https://www.youtube.com/watch?v=Hq6Ewtg2vHQ'>Branca De Neve</a></li>
-<li><a href='https://www.youtube.com/watch?v=t0Qwx2jilms'>Ecossistema</a></li>
-<li><a href='https://www.youtube.com/watch?v=hIFtybVCHAA'>Grensel e Herta</a></li>
-<li><a href='https://www.youtube.com/watch?v='>In To The Library</a></li>
-<li><a href='https://www.youtube.com/watch?v=2m1W3idiMV8'>Last Words</a></li>
-<li><a href='https://www.youtube.com/watch?v=5q7iU6TQFe4'>lost sandals</a></li>
-<li><a href='https://www.youtube.com/watch?v=cOKE1q2X-os'>Louca No Amor</a></li>
-<li><a href='https://www.youtube.com/watch?v=ks91GxTXRqg'>Minério De Ferro</a></li>
-<li><a href='https://www.youtube.com/watch?v=DWuh0TmjyCg'>Muito Quente Aqui!</a></li>
-<li><a href='https://www.youtube.com/watch?v=DF01TPzmDmo'>Naunch Sumiu!</a></li>
-<li><a href='https://www.youtube.com/watch?v=E0uCAtF7hMY'>Pest Patrol</a></li>
-<li><a href='https://www.youtube.com/watch?v=H86zIF79-Pc'>Plateau Do Escritor</a></li>
-<li><a href='https://www.youtube.com/watch?v=7rxFc7TfAVo'>Precious Lead</a></li>
-<li><a href='https://www.youtube.com/watch?v=Pd6fNZGVC_4'>Present Recovery</a></li>
-<li><a href='https://www.youtube.com/watch?v=XJoJl5eEi8A'>Puppet And Master</a></li>
-<li><a href='https://www.youtube.com/watch?v=aaFrIOCKE7U'>Rare Volumes</a></li>
-<li><a href='https://www.youtube.com/watch?v=j_u21wpFyXA'>Repairs</a></li>
-<li><a href='https://www.youtube.com/watch?v=DF01TPzmDmo'>Segurança Trabalho</a></li>
-<li><a href='https://www.youtube.com/watch?v=ZP7KS7REzYU'>Soluschka</a></li>
-<li><a href='https://www.youtube.com/watch?v=MUElpQ4NDBA'>Um Pequeno Lembrete</a></li>
-</ul></li>
-
-<li><a class='fly'>GORGOROS - 8</a>
-<ul>       
-<li><a href='https://www.youtube.com/watch?v=8WP0BQaxtHo'>A Way Home</a></li>
-<li><a href='https://www.youtube.com/watch?v=-z-8Qq5dJM0'>Avenge The Fallen</a></li>
-<li><a href='https://www.youtube.com/watch?v=k9HaMhmj4I8'>Dialy Deal</a></li>
-<li><a href='https://www.youtube.com/watch?v=_t91kz3KaVY'>For The Family</a></li>
-<li><a href='https://www.youtube.com/watch?v=d_udzyr4McQ'>Hearth For Artefacts</a></li>
-<li><a href='https://www.youtube.com/watch?v=LqZJeZzru_8'>Monster Hunt</a></li>
-<li><a href='https://www.youtube.com/watch?v=eEq9YieZbv4'>Revenge</a></li>
-<li><a href='https://www.youtube.com/watch?v=d_udzyr4McQ'>Tresoure Hunt</a></li>
-</ul></li>
-
-<li><a class='fly'>HUNTERRA - 15</a>
-<ul>
-<li><a href='https://tibiamebrasilbr.blogspot.com/2017/01/acquired-taste.html'>Acquired Taste</a></li>
-<li><a href='https://tibiamebrasilbr.blogspot.com/2017/01/bit-by-bit.html'>Bit by Bit</a></li>
-<li><a href='https://tibiamebrasilbr.blogspot.com/2017/01/fatal-extraction.html'>Fatal Extraction</a></li>
-<li><a href='https://tibiamebrasilbr.blogspot.com/2017/01/furious-and-fast.html'>Furious and Fast</a></li>
-<li><a href='https://tibiamebrasilbr.blogspot.com/2017/01/hunting-accuracy.html'>Hunting Accuracy</a></li>
-<li><a href='https://tibiamebrasilbr.blogspot.com/2017/01/hunting-by-numbers.html'>Hunting by Numbers</a></li>
-<li><a href='https://tibiamebrasilbr.blogspot.com/2017/01/hunting-excellence.html'>Hunting Excellence</a></li>
-<li><a href='https://tibiamebrasilbr.blogspot.com/2017/01/hunting-machine.html'>Hunting Machine</a></li>
-<li><a href='https://tibiamebrasilbr.blogspot.com/2017/01/hunting-overkill.html'>Hunting Overkill</a></li>
-<li><a href='https://tibiamebrasilbr.blogspot.com/2017/01/just-in-time-hunting.html'>Just in time Hunting</a></li>
-<li><a href='https://tibiamebrasilbr.blogspot.com/2017/01/repulsive-delicacy.html'>Repulsive Delicacy</a></li>
-<li><a href='https://tibiamebrasilbr.blogspot.com/2017/01/roots-bloody-roots.html'>Roots bloody roots</a></li>
-<li><a href='https://tibiamebrasilbr.blogspot.com/2017/01/speed-hunting.html'>Speed Hunting</a></li>
-<li><a href='https://tibiamebrasilbr.blogspot.com/2017/01/spiders-by-score.html'>Spiders by The Score</a></li>
-<li><a href='https://tibiamebrasilbr.blogspot.com/2017/01/you-really-eat-that.html'>You really eat That?</a></li>
-</ul></li>
-
-
-<li><a class='fly'>ILHA DO TESOURO - 6</a>
-<ul>
-<li><a href='https://www.youtube.com/watch?v=hoKdkSSmOeo'>Isca de Peixe</a></li>
-<li><a href='https://www.youtube.com/watch?v=5FIySe6l1m0'>Coisa de louco</a></li>
-<li><a href='https://www.youtube.com/watch?v=mTrherujKfQ'>O que vai</a></li>
-<li><a href='https://www.youtube.com/watch?v=M7LS83QuWN0'>Tem alguem em casa?</a></li>
-<li><a href='https://www.youtube.com/watch?v=-YocU7xlgEM'>Da blob</a></li>
-<li><a href='https://www.youtube.com/watch?v=KbqUzm_XabI'>Um insight profundo</a></li>
-</ul></li>
-
-<li><a class='fly'>LYBERA - 10</a>
-<ul>
-<li><a href='https://www.youtube.com/watch?v=IO7fs99oiKk'>A Irmandade</a></li>
-<li><a href='https://www.youtube.com/watch?v=tK5HX8K1rvM'>A Pa De Siles</a></li>
-<li><a href='https://www.youtube.com/watch?v=_UEKIlgKTK4'>Armadilhas De Lupina</a></li>
-<li><a href='https://www.youtube.com/watch?v=JtLu5hd9umI'>Encontrando Zewus</a></li>
-<li><a href='https://www.youtube.com/watch?v=NsDV5BNh8AE'>Esmeralda De Fisziss</a></li>
-<li><a href='https://www.youtube.com/watch?v=A2AjvOUFcWk'>O Mel De Yvonna</a></li>
-<li><a href='https://www.youtube.com/watch?v=LiENXXnOzYw'>O Tesouro De Skiron</a></li>
-<li><a href='https://www.youtube.com/watch?v=jQSFUoWeSBI'>Os lobos De Pescor</a></li>
-<li><a href='https://www.youtube.com/watch?v=ItS9wn-ggt4'>Os Sapos De Jumes</a></li>
-<li><a href='https://www.youtube.com/watch?v=qlQR1HKh4eM'>Pergaminho Pegajoso</a></li>
-</ul></li>
-
-
-<li><a class='fly'>RIFTION - 15</a>
-<ul>       
-<li><a href='https://www.youtube.com/watch?v=CqE7srQ569k'>A Direct Approach</a></li>
-<li><a href='https://www.youtube.com/watch?v=7C6qQkxImbg'>A Strange request</a></li>
-<li><a href='https://www.youtube.com/watch?v=fvUAoCxVw7M'>Boulder Bashing</a></li>
-<li><a href='https://www.youtube.com/watch?v=ejandSFHatA'>Bring them back!</a></li>
-<li><a href='https://www.youtube.com/watch?v=T4AgmWuCXxE'>Catch it if you can!</a></li>
-<li><a href='https://www.youtube.com/watch?v=J4lRqbo3-dY'>Closing the Gate</a></li>
-<li><a href='https://www.youtube.com/watch?v=Ux1GN_1fYyE'>Flotsam e Jetsam</a></li>
-<li><a href='https://www.youtube.com/watch?v=4pEV8xAl1yY'>Manor of Madness	</a></li>
-<li><a href='https://www.youtube.com/watch?v=lK9UcU9qhq8'>Palisade Repairs</a></li>
-<li><a href='https://www.youtube.com/watch?v=xttHvojG6pk'>Push&#39;em back!</a></li>
-<li><a href='https://www.youtube.com/watch?v=BtMvJY0peNs'>Reach the Rift</a></li>
-<li>Riftion Barriers(usar colar)</li>
-<li><a href='https://www.youtube.com/watch?v=9K6d1lenaHM'>Save Haven</a></li>
-<li><a href='https://www.youtube.com/watch?v=MO-eyJ_gJ0E'>Warrior Women</a></li>
-<li><a href='https://www.youtube.com/watch?v=EsYQJxobDxA'>Whispering Voices</a></li>
-</ul></li>
-
-
-<li><a class='fly'>SOLAHMAR - 53</a>
-<ul>       
-<li><a href='https://www.youtube.com/watch?v=0CL8pYAlndU'>A Different Cipher</a></li>
-<li><a href='https://www.youtube.com/watch?v=Hi-Hy7E9pZ0'>A Magical Cipher</a></li>
-<li><a href='https://www.youtube.com/watch?v=UCVpWCWcStk'>Bring back my Man</a></li>
-<li><a href='https://www.youtube.com/watch?v=mcJUWXJeUJQ'>Bug chasing</a></li>
-<li><a href='https://www.youtube.com/watch?v=XPlzOd-AO08'>Compass of Elements</a></li>
-<li><a href='https://www.youtube.com/watch?v=z2ceJBn92ZQ'>Directions</a></li>
-<li><a href='https://www.youtube.com/watch?v=x64AH7Js7Y4'>Disarm and Recover</a></li>
-<li><a href='https://www.youtube.com/watch?v=EU8sYoAEo3I'>Do it yourself</a></li>
-<li><a href='https://www.youtube.com/watch?v=FRz9sLzvMRI'>Fight the Raiders</a></li>
-<li><a href='https://www.youtube.com/watch?v=pZH8DBs_VQ8'>Find a Teacher</a></li>
-<li><a href='https://www.youtube.com/watch?v=VT_NxRRnoaU'>Find a way Through</a></li>
-<li><a href='https://www.youtube.com/watch?v=VOO3WPFq_aU'>Find the Market</a></li>
-<li><a href='https://www.youtube.com/watch?v=hvOlGmeMwEw'>Fisherman&#39;s friend</a></li>
-<li><a href='https://www.youtube.com/watch?v=OuinQWPnKGQ'>Fragments of History</a></li>
-<li><a href='https://www.youtube.com/watch?v=ycaXBJ4mIK0'>Fragmentos</a></li>
-<li><a href='https://www.youtube.com/watch?v=QEL2Ey0UbD8'>Get Information</a></li>
-<li><a href='https://www.youtube.com/watch?v=sctaj1d02yI'>Get the Gear</a></li>
-<li><a href='https://www.youtube.com/watch?v=9pr7b2Bf-Yw'>Helping Hand</a></li>
-<li><a href='https://www.youtube.com/watch?v=TyNGuuZMO3w'>Loosening Tongue</a></li>
-<li><a href='https://www.youtube.com/watch?v=sAED3ugf6H0'>Lost Notes</a></li>
-<li><a href='https://www.youtube.com/watch?v=R8wOqQKiT-E'>Missing caravan</a></li>
-<li><a href='https://www.youtube.com/watch?v=JJsZnLcw4kk'>Missing in Action</a></li>
-<li><a href='https://www.youtube.com/watch?v=_njcmw5gn2I'>O Destino de Jemas</a></li>
-<li><a href='https://www.youtube.com/watch?v=myuUKUdY1cU'>O Faraó</a></li>
-<li><a href='https://www.youtube.com/watch?v=isOIDvdn6nE'>O Tesouro Do Lago</a></li>
-<li><a href='https://www.youtube.com/watch?v=sLHHniMXo2Y'>Old Academy</a></li>
-<li><a href='https://www.youtube.com/watch?v=5HimDlDw-uM'>Os Labirintos</a></li>
-<li><a href='https://www.youtube.com/watch?v=k2_myL-yFzk'>Out of Business</a></li>
-<li><a href='https://www.youtube.com/watch?v=-bfVuS6KBeU'>Pest control</a></li>
-<li><a href='https://www.youtube.com/watch?v=_f-pgjvc6y8'>Pest Problem</a></li>
-<li><a href='https://www.youtube.com/watch?v=l1gNLQWOpkE'>Queen&#39;s Sanctuary</a></li>
-<li><a href='https://www.youtube.com/watch?v=Beiwas6tyuI'>Rescue the Son</a></li>
-<li><a href='https://www.youtube.com/watch?v=XwcPBoOzjvM'>Riddles of the Past</a></li>
-<li><a href='https://www.youtube.com/watch?v=toAr_ySgrwk'>Rivcroc hunter</a></li>
-<li><a href='https://www.youtube.com/watch?v=VGXaVo0_oeM'>Rob the Raiders</a></li>
-<li><a href='https://www.youtube.com/watch?v=XceNXLdcONE'>Room of Maps</a></li>
-<li><a href='https://www.youtube.com/watch?v=af5Fhn5NpVI'>Safe Journey?</a></li>
-<li><a href='https://www.youtube.com/watch?v=O2Yid1NqdhE'>Seeds of the Oliba</a></li>
-<li><a href='https://www.youtube.com/watch?v=-T_uK9gXcgc'>Seek and Rescue</a></li>
-<li><a href='https://www.youtube.com/watch?v=dQoP5ZxR4rU'>Smile of the Sphinx</a></li>
-<li><a href='https://www.youtube.com/watch?v=CW7_fla2h6k'>Sphinx</a></li>
-<li><a href='https://www.youtube.com/watch?v=kFY3v9rGrg8'>Sunken Library</a></li>
-<li><a href='https://www.youtube.com/watch?v=eudCLrxQyzo'>Tears of Heaven</a></li>
-<li><a href='https://www.youtube.com/watch?v=m9RebvELv50'>The Archaeologist</a></li>
-<li><a href='https://www.youtube.com/watch?v=TscZwfd64ek'>The final Cipher</a></li>
-<li><a href='https://www.youtube.com/watch?v=iQeo9BL2QII'>The first Mummy</a></li>
-<li><a href='https://www.youtube.com/watch?v=HFeIliQ-8ek'>The Search</a></li>
-<li><a href='https://www.youtube.com/watch?v=R-4Y_7i2a78'>Three Wishes?</a></li>
-<li><a href='https://www.youtube.com/watch?v=etn12hNphAU'>Tomb of Air</a></li>
-<li><a href='https://www.youtube.com/watch?v=a-WDFiD5Rzw'>Tomb of Earth</a></li>
-<li><a href='https://www.youtube.com/watch?v=UVD9dsXtTPk'>Tomb of Fire</a></li>
-<li><a href='https://www.youtube.com/watch?v=FWRGvuToxe8'>Tomb of Water</a></li>
-<li><a href='https://www.youtube.com/watch?v=t5_XtxgOLi4'>Trailing The Robbers</a></li>
-</ul></li>
-
-
-<li><a class='fly'>STARFISH - 12</a>
-<ul>       
-<li><a href='https://www.youtube.com/watch?v=RIsLtdEFEIE'>Artrefact Recovery</a></li>
-<li><a href='https://www.youtube.com/watch?v=fUIHopWtyTg'>As Três Vestimentas</a></li>
-<li><a href='https://www.youtube.com/watch?v=J6YCUURAv9k'>Exterminador</a></li>
-<li><a href='https://www.youtube.com/watch?v=5p0u89LNuHU'>Falta De Açucar</a></li>
-<li><a href='https://www.youtube.com/watch?v=rPIGbNRUR0c'>Fiasco Do Tentaculo</a></li>
-<li><a href='https://www.youtube.com/watch?v=NkoWxpDeXM8'>O Navegador</a></li>
-<li><a href='https://www.youtube.com/watch?v=4W3PKr4fP0I'>Onda De Sabor</a></li>
-<li><a href='https://www.youtube.com/watch?v=GudXImyuE60'>Piratas e Ninjas</a></li>
-<li><a href='https://www.youtube.com/watch?v=x6gCRUCfKmU'>Solution</a></li>
-<li><a href='https://www.youtube.com/watch?v=zVV8fvmRBzI'>Torne-se Um Pirata</a></li>
-<li><a href='https://www.youtube.com/watch?v=CertJpQQYAM'>Templo De Pedra</a></li>
-<li><a href='https://www.youtube.com/watch?v=nPDyRdXfZqI'>Tesouro Amaldiçoado</a></li>
-</ul></li>
-
-
-<li><a class='fly'>ST.NIVALIS - 26</a>
-<ul>       
-<li><a href='https://www.youtube.com/watch?v=BRwYUBOjL5I'>Another Step</a></li>  
-<li><a href='https://www.youtube.com/watch?v=DtU5JDFLSDc'>A Invasão De Drake</a></li>
-<li><a href='https://www.youtube.com/watch?v=kBOvxSCLW1o'>A Ultima Gota</a></li>
-<li><a href='https://www.youtube.com/watch?v=hVen9qgxFRs'>Afago O Pé Grande</a></li>
-<li><a href='https://www.youtube.com/watch?v=vBNTR_jftCY'>Alimemte os Meebles!</a></li>
-<li><a href='https://www.youtube.com/watch?v=uzZPcq9YSLE'>Aqui,Gatinho!</a></li>
-<li><a href='https://www.youtube.com/watch?v=CskyyGEX0E8'>Chaka Chaka boom</a></li>
-<li><a href='https://www.youtube.com/watch?v=gm-EepthgWs'>Durma Feito Rei</a></li>
-<li><a href='https://www.youtube.com/watch?v=K2oN_iErfgQ'>Fã Descontrolado</a></li>
-<li><a href='https://www.youtube.com/watch?v=rtD46jzE48Y'>Ficando Louco</a></li>
-<li><a href='https://www.youtube.com/watch?v=UK0Yy4H2VRc'>Fique Grande E Forte</a></li>
-<li><a href='https://www.youtube.com/watch?v=Xm8lLoa-Xqo'>Missão:St.Nivalis</a></li>
-<li><a href='https://www.youtube.com/watch?v=vj_iuwfc-pc'>O Anel</a></li>
-<li><a href='https://www.youtube.com/watch?v=YXfIEotscvI'>O Cha Da Tosse</a></li>
-<li><a href='https://www.youtube.com/watch?v=oxHHlOFN4Vk'>O Lessfest</a></li>
-<li><a href='https://www.youtube.com/watch?v=ToNofFKLS80'>Onde Está O Rei Mort</a></li>
-<li><a href='https://www.youtube.com/watch?v=jXI7IQg_GWQ'>Pedrilhionário</a></li>
-<li><a href='https://www.youtube.com/watch?v=U3KgaOm5krY'>Presente Para Amigo</a></li>
-<li><a href='https://www.youtube.com/watch?v=qBeMUKSDPAU'>Que Esforço!</a></li>
-<li><a href='https://www.youtube.com/watch?v=X81VULqo9BI'>Rua Sem Destino</a></li>
-<li><a href='https://www.youtube.com/watch?v=wgEwkBprkCY'>Showdown</a></li>
-<li><a href='https://www.youtube.com/watch?v=MqZzirpkVfI'>Só Pelo Seu Gelo</a></li>
-<li><a href='https://www.youtube.com/watch?v=AnqDfmXBgOM'>Superstar De Nivalis</a></li>
-<li><a href='https://www.youtube.com/watch?v=mmICGXhhajE'>Trenó Vagaroso</a></li>
-<li><a class='fly'>BOSS 70</a>
-<ul><li><a href='https://www.youtube.com/watch?v=nptzfiRBfBo'>O Covil Congelado</a></li></ul></li>
-<li><a class='fly'>EVENTO DE INVERNO</a>
-<ul><li><a href='https://www.youtube.com/watch?v=QmB_5FwhvK8'>O Livro Perdido</a></li></ul></li>
-</ul></li>
-
-
-<li><a class='fly'>YABUTO - 49</a>
-<ul>       
-<li><a href='https://www.youtube.com/watch?v=eiRABbLH00I'>23 Passos Do Kata</a></li>
-<li><a href='https://www.youtube.com/watch?v=ldOOG4CUMxg'>50 Longs Depois</a></li>
-<li><a href='https://www.youtube.com/watch?v=0VAEGdNTU6Y'>A Planta</a></li>
-<li><a href='https://www.youtube.com/watch?v=VSXM902Y6yA'>Amigo Do Rebelde</a></li>
-<li><a href='https://www.youtube.com/watch?v=dogM4DZbzww'>Aprendiz De Ninja</a></li>
-<li><a href='https://www.youtube.com/watch?v=znOzK9Edffk'>Arroz Em Falta</a></li>
-<li><a href='https://www.youtube.com/watch?v=QWtiyNg912k'>As sementes</a></li>
-<li><a href='https://www.youtube.com/watch?v=PY5fV5i_ccY'>Brilhe,Santuario!</a></li>
-<li><a href='https://www.youtube.com/watch?v=LfXya3H_r-M'>Casa Rebelde</a></li>
-<li><a href='https://www.youtube.com/watch?v=FrgdXOZyLhY'>Castelo De Dragões</a></li>
-<li><a href='https://www.youtube.com/watch?v=1v_d2ih0-Hc'>Classic Adventure</a></li>
-<li><a href='https://www.youtube.com/watch?v=bOPN6nEVWRY'>Colecão De Lixo</a></li>
-<li><a href='https://www.youtube.com/watch?v=1KVCySFEHUU'>Como Fumaça</a></li>
-<li><a href='https://www.youtube.com/watch?v=CpPO9p97GQw'>Coração Da Escuridão</a></li>
-<li><a href='https://www.youtube.com/watch?v=T8bFFZB35O8'>Coração Iluminado</a></li>
-<li><a href='https://www.youtube.com/watch?v=84pxjml6mDc'>Detecção Fantasma</a></li>
-<li><a href='https://www.youtube.com/watch?v=REKFlduFzdQ'>Distração Inflamável</a></li>
-<li><a href='https://www.youtube.com/watch?v=acnX4BtWv2I'>Encontrando Nepo</a></li>
-<li><a href='https://www.youtube.com/watch?v=C2uMXPOf9aY'>Encontre O Imperador</a></li>
-<li><a href='https://www.youtube.com/watch?v=ivJehqkpl9U'>Enfrentando A Fonte</a></li>
-<li><a href='https://www.youtube.com/watch?v=5CZqBLIEZJI'>Espada São Afiadas</a></li>
-<li><a href='https://www.youtube.com/watch?v=IvKn9QDRREY'>Estatua De Brrlala</a></li>
-<li><a href='https://www.youtube.com/watch?v=3vmFmah47xs'>Faca De Taro</a></li>
-<li><a href='https://www.youtube.com/watch?v=DQeY6zByvYI'>Fuga Da Prisão</a></li>
-<li><a href='https://www.youtube.com/watch?v='>Hora dos Biscoitos</a></li>
-<li><a href='https://www.youtube.com/watch?v=xEM5G1V-jBI'>Indo Para O Oeste</a></li>
-<li><a href='https://www.youtube.com/watch?v=PbQpV2bbS7o'>Liberte O Taro</a></li>
-<li><a href='https://www.youtube.com/watch?v=u4RVLEv6_xI'>Macarrã Para Deisana</a></li>
-<li><a href='https://www.youtube.com/watch?v=u4RVLEv6_xI'>Macarrã Para Heiana</a></li>
-<li><a href='https://www.youtube.com/watch?v=u4RVLEv6_xI'>Macarrã Para Lapuda</a></li>
-<li><a href='https://www.youtube.com/watch?v=u4RVLEv6_xI'>Macarrã Para Panaku</a></li>
-<li><a href='https://www.youtube.com/watch?v=u4RVLEv6_xI'>Macarrã Para Sassai</a></li>
-<li><a href='https://www.youtube.com/watch?v=u4RVLEv6_xI'>Macarrã Para Shodan</a></li>
-<li><a href='https://www.youtube.com/watch?v=H6OHaLu0SC4'>Ministro Hinshun</a></li>
-<li><a href='https://www.youtube.com/watch?v=rXLcayJ_PPs'>Missão: Yabuto</a></li>
-<li><a href='https://www.youtube.com/watch?v=_18gX8RSr8U'>Moscas Assadas</a></li>
-<li><a href='https://www.youtube.com/watch?v=u4RVLEv6_xI'>O Homem Macarrão</a></li>
-<li><a href='https://www.youtube.com/watch?v=viCVK__EHRk'>O Mestre Kata</a></li>
-<li><a href='https://www.youtube.com/watch?v=vzyx_eGtrZ4'>O Poço Maldito</a></li>
-<li><a href='https://www.youtube.com/watch?v=R5ln-_956ro'>Os Sinos Da Floresta</a></li>
-<li><a href='https://www.youtube.com/watch?v=kVgJN8arSYU'>Peixe</a></li>
-<li><a href='https://www.youtube.com/watch?v=ujJLEIqEamA'>Porta Dos Fundos</a></li>
-<li><a href='https://www.youtube.com/watch?v=cqtn465rUT4'>Propaganda</a></li>
-<li><a href='https://www.youtube.com/watch?v=xZ5F7y5EByA'>Querido Rebelde</a></li>
-<li><a href='https://www.youtube.com/watch?v=bwoTkMh__0c'>Respitação De Nuknuk</a></li>
-<li><a href='https://www.youtube.com/watch?v=FuqszNT_Wvw'>Sempai Secreto</a></li>
-<li><a href='https://www.youtube.com/watch?v=TY8sDXfa6oo'>Templo Da Dança</a></li>
-<li><a href='https://www.youtube.com/watch?v=GPryg40jP60'>Tiharakatana!</a></li>
-<li><a href='https://www.youtube.com/watch?v=AdeFNqKwNIc'>Ver De Novo</a></li>
-</ul></li>
-  
-<li><a class='fly'>UNDERWATER - 17</a>
-<ul>       
-<li><a href='https://www.youtube.com/watch?v=bN_tftOqFVM'>Adventure Legacy</a></li>
-<li><a href='https://www.youtube.com/watch?v=A4BQ7yPdtGc'>Ancient Treasure</a></li>
-<li><a href='https://www.youtube.com/watch?v=BRwYUBOjL5I'>Another Step</a></li>
-<li><a href='https://www.youtube.com/watch?v=1v_d2ih0-Hc'>Classic Adventure</a></li>
-<li><a href='https://www.youtube.com/watch?v=z2ceJBn92ZQ'>Directions</a></li>
-<li><a href='https://www.youtube.com/watch?v=145W0P7e2sc'>Down Under</a></li>
-<li><a href='https://www.youtube.com/watch?v=IwIGi12fY1s'>Find A Lead</a></li>
-<li><a href='https://www.youtube.com/watch?v=NijD39gOQrM'>First Insight</a></li>
-<li><a href='https://www.youtube.com/watch?v=scXrTwKXmUM'>Getting A Picture</a></li>
-<li><a href='https://www.youtube.com/watch?v=1muk8NYyySE'>Muder Trail</a></li>
-<li><a href='https://www.youtube.com/watch?v=-IhdsgO1j3E'>Pickup The Trail</a></li>
-<li><a href='https://www.youtube.com/watch?v=j_u21wpFyXA'>Repairs</a></li>
-<li><a href='https://www.youtube.com/watch?v=wrLizFyg7Oo'>Safety Measures</a></li>
-<li><a href='https://www.youtube.com/watch?v=wgEwkBprkCY'>Showdown</a></li>
-<li><a href='https://www.youtube.com/watch?v=x6gCRUCfKmU'>Solution</a></li>
-<li><a href='https://www.youtube.com/watch?v=6WptNHXYy88'>Stone Of Contention</a></li>
-<li><a href='https://www.youtube.com/watch?v=5DajixJYwjU'>Thief&#39;s End</a></li>
-</ul></li>
-
-  <li><a class='fly'>EVENTOS</a><ul><li><a class='fly'>SUMMERFEAST - 9</a><ul><li><a class='fly'>ETAPA 1 👇</a>
-<ul>
-<li><a href='https://www.youtube.com/watch?v=SDeS33O_X0Y'>Preliminares</a></li>
-<li><a href='https://www.youtube.com/watch?v=SDeS33O_X0Y'>Misplaced</a></li>
-<li><a href='https://www.youtube.com/watch?v=SDeS33O_X0Y'>Feast Preparation</a></li></ul></li>
-<li><a href='https://www.youtube.com/watch?v=SDeS33O_X0Y'>Mirror of Sunna</a></li>
-<li><a href='https://www.youtube.com/watch?v=SDeS33O_X0Y'>Blessed Fields</a></li>
-<li><a href='https://www.youtube.com/watch?v=SDeS33O_X0Y'>Light Of Truth</a></li>
-<li><a href='https://www.youtube.com/watch?v=SDeS33O_X0Y'>Enlightenment</a></li>
-<li><a href='https://www.youtube.com/watch?v=SDeS33O_X0Y'>Burning Fire</a></li>
-<li><a href='https://www.youtube.com/watch?v=SDeS33O_X0Y'>USE TOKENS</a></li>
-</ul></li>
-<li><a class='fly'>HALLOWEEN - 1</a>
-<ul><li><a href='https://tibiamebrasilbr.blogspot.com/2018/10/darkmoons-eve.html'>A WITCHES SECRETS</a></li></ul></li>
-
-<li><a class='fly'>PASCOA - 5</a>
-<ul>
-<li><a href='https://www.youtube.com/watch?v=BerOBXcSA5s'>Taming a Drakehelp!</a></li>
-<li><a href='https://www.youtube.com/watch?v=QffRZCSYFFE'>Taming a Dragon</a></li>
-<li><a href='https://www.youtube.com/watch?v=pMr4pvPL6_g'>Taming an ice dragon</a></li>
-<li><a href='https://www.youtube.com/watch?v=1MrrFMYrvYE'>Taming a Long</a></li>
-<li><a href='https://www.youtube.com/watch?v=7N7PcvPHmM0'>Taming a Blackdrake</a></li>
-</ul></li>
-
-<li><a class='fly'>ISLAND GAMES - 1</a>
-<ul><li><a href='https://tibiamebrasilbr.blogspot.com/2018/06/evento-island-games.html'>ISLAND GAMES</a></li>
-</ul></li>
-
-<li><a class='fly'>INVERNO - 7</a>
-<ul>
-<li><a href='https://www.youtube.com/watch?v=xwpyVdUy5As'>Siga as pistas</a></li>
-<li><a href='https://www.youtube.com/watch?v=xwpyVdUy5As'>A adaga dansçante</a></li>
-<li><a href='https://www.youtube.com/watch?v=xwpyVdUy5As'>A cartomante</a></li>
-<li><a href='https://www.youtube.com/watch?v=xwpyVdUy5As'>A porção de amor</a></li>
-<li><a href='https://www.youtube.com/watch?v=xwpyVdUy5As'>Hora da sedução</a></li>
-<li><a href='https://www.youtube.com/watch?v=xwpyVdUy5As'>Ladrão trabalha</a></li>
-<li><a href='https://www.youtube.com/watch?v=QmB_5FwhvK8'>O Livro Perdido</a></li>
-<li><a href='https://www.youtube.com/watch?v=U7ruq9XBNdA'>Café da Manha</a></li>
-</ul></li>
-</ul>
-</li>
-
-</ul></li>
-
-<li class='top'><a class='top_link'><span class='down'>EQUIPAMENTOS</span></a>
- <ul class='sub'>
-    <li><a class='fly'>VOCAÇÃO</a>
-    <ul>
-         <li><a class='fly'><img border='0' data-original-height='20' data-original-width='20' src='https://4.bp.blogspot.com/-f0CLCOcy458/Wwl-_R1FVXI/AAAAAAAAOIw/R12pIBEV-0E34kSe2HvOpwPDI2s-7tkJQCLcBGAs/s1600/videotogif_2018.05.26_12.34.36.gif' style='text-align: center;'/>WARRIOR</a>
-		 <ul>
-		<li><a href='http://tibiamebrasilbr.blogspot.com/2018/05/armas-warriors.html'><img border='0' data-original-height='20' data-original-width='20' src='https://2.bp.blogspot.com/-xciIU9hrTdw/W5MJYoVP0HI/AAAAAAAAQdw/FMRt8p-qrHgzBJuoSFTBVVTAsZaZn43PQCLcBGAs/s1600/wpon%2Bwar.gif'/>ARMAS</a></li>
-         <li><a href='http://tibiamebrasilbr.blogspot.com/2018/05/capacetes-warrior.html'><img border='0' height='30' src='https://3.bp.blogspot.com/-YkcWeUewblY/W08jaDO37_I/AAAAAAAAQDc/aVZvq6voZ8cGNf6baQYbdW7RWde2jvP1ACLcBGAs/s1600/videotogif_2018.07.17_18.10.39.gif' width='30'/>CAPACETES</a></li>
-         <li><a href='http://tibiamebrasilbr.blogspot.com/2018/05/armaduras-warrior.html'>
-<img border='0' height='30' src='https://3.bp.blogspot.com/-7Dv-gVCxjao/W08jb63TBdI/AAAAAAAAQD4/WqkhZ8QI7DMCrszKJs5y_smBOGR0u4P1wCLcBGAs/s1600/videotogif_2018.07.17_20.40.54.gif' width='30'/>ARMADURAS</a></li>
-         <li><a href='http://tibiamebrasilbr.blogspot.com/2018/05/escudos-warrior.html'><img border='0' height='30' src='https://4.bp.blogspot.com/-15yQ5FcuBw8/W08jaa8foYI/AAAAAAAAQDk/N8poHHfDGREetmK56hqhhY49RknbCB_GwCLcBGAs/s1600/videotogif_2018.07.17_18.17.52.gif' width='30'/>ESCUDOS</a></li>
-         <li><a href='http://tibiamebrasilbr.blogspot.com/2018/05/calcas-warrior.html'><img border='0' height='30' src='https://2.bp.blogspot.com/-6r-BqIjCv3I/W08jbCInW1I/AAAAAAAAQDw/X6C5mUFB3z06ooYDbjJGfXFR337hm0vAgCLcBGAs/s1600/videotogif_2018.07.17_20.38.50.gif' width='30'/>CALÇAS</a></li>
-         <li><a href='http://tibiamebrasilbr.blogspot.com/2018/05/amuletos.html'><img border='0' height='30' src='https://4.bp.blogspot.com/-WhgCViZpKWU/W08jcU7pRoI/AAAAAAAAQEA/jJ__yI9obF4NNsh916FJuDDuO_Zq92A7ACLcBGAs/s1600/videotogif_2018.07.18_08.21.30.gif' width='30'/>AMULETOS</a></li>
-         <li><a href='http://tibiamebrasilbr.blogspot.com/2018/05/aneis.html'><img border='0' height='30' src='https://4.bp.blogspot.com/-xSF-86j0bkw/W08jcGLJhNI/AAAAAAAAQD8/ACidIdQnywkmwL1vvuNYz-xAyw8P9-9PwCLcBGAs/s1600/videotogif_2018.07.18_08.20.39.gif' width='30'/>ANEIS</a></li>
-         </ul></li>
-
-         <li><a class='fly'><img border='0' data-original-height='20' data-original-width='20' src='https://4.bp.blogspot.com/-HonHNzTy3Zg/WwlcQ6yRdRI/AAAAAAAAOIY/Uf1JpHaW-JYCqC4Wvr1VSUNQPHJXgWfyACLcBGAs/s1600/wizardmale.gif' style='color: #11084c; text-align: center;'/>WIZARD</a>
-		 <ul>
-			<li><a href='http://tibiamebrasilbr.blogspot.com/2018/05/armas-wizard.html'><img border='0' data-original-height='20' data-original-width='20' src='https://2.bp.blogspot.com/-b1QM4W3GUT4/W5MJYsf2Q4I/AAAAAAAAQd0/klTulgxS5R845k3uAgg4h91o6VqcTUSqwCLcBGAs/s1600/wpon%2Bwiz.gif'/>ARMAS</a></li>
-         <li><a href='http://tibiamebrasilbr.blogspot.com/2018/05/capacetes-wizard.html'><img border='0' height='30' src='https://1.bp.blogspot.com/-x99KPQoGomE/W08jafpU9sI/AAAAAAAAQDg/sg9j_k9LWFodpV2Fu-UGX5_oMWXuKiuXACLcBGAs/s1600/videotogif_2018.07.17_18.14.29.gif' width='30'/>CAPACETES</a></li>
-         <li><a href='http://tibiamebrasilbr.blogspot.com/2018/05/armaduras-wizard.html'><img border='0' height='30' src='https://4.bp.blogspot.com/-Afim2Teqf2k/W08jbjVmJnI/AAAAAAAAQD0/q31tdWSWmkE-v5HzFbtLxhwm0shXgXFswCLcBGAs/s1600/videotogif_2018.07.17_20.40.04.gif' width='30'/>ARMADURAS</a></li>
-         <li><a href='http://tibiamebrasilbr.blogspot.com/2018/05/escudos-wizard.html'><img border='0' height='30' src='https://4.bp.blogspot.com/-KcIzKtKg2AI/W08ja0YY2TI/AAAAAAAAQDo/vERKqxmoeeoIFxpeYmq2fogG7kDqVGp1QCLcBGAs/s1600/videotogif_2018.07.17_18.22.34.gif' width='30'/>ESCUDOS</a></li>
-         <li><a href='http://tibiamebrasilbr.blogspot.com/2018/05/calcas-wizard.html'><img border='0' height='30' src='https://2.bp.blogspot.com/-9TsCTmK9nUc/W08jbCXIeNI/AAAAAAAAQDs/qaCMYjAcK6ElK1fo9MACXQY9SphKEh7kwCLcBGAs/s1600/videotogif_2018.07.17_20.37.50.gif' width='30'/>CALÇAS</a></li>
-         <li><a href='http://tibiamebrasilbr.blogspot.com/2018/05/amuletos.html'><img border='0' height='30' src='https://4.bp.blogspot.com/-WhgCViZpKWU/W08jcU7pRoI/AAAAAAAAQEA/jJ__yI9obF4NNsh916FJuDDuO_Zq92A7ACLcBGAs/s1600/videotogif_2018.07.18_08.21.30.gif' width='30'/>AMULETOS</a></li>
-         <li><a href='http://tibiamebrasilbr.blogspot.com/2018/05/aneis.html'><img border='0' height='30' src='https://4.bp.blogspot.com/-xSF-86j0bkw/W08jcGLJhNI/AAAAAAAAQD8/ACidIdQnywkmwL1vvuNYz-xAyw8P9-9PwCLcBGAs/s1600/videotogif_2018.07.18_08.20.39.gif' width='30'/>ANEIS</a></li>
-         </ul></li>
-</ul></li></ul></li>
-
-<li class='top'><a class='top_link'><span class='down'>MODS</span></a>
-<ul class='sub'>
-<li><a href='https://www.youtube.com/watch?v=0WmV5ywpocg'>TUTORIAL (YOUTUBE)</a></li>
-<li><a href='https://drive.google.com/file/d/11qIRVkCD22S1bIl8wwTvyhAgvFvaGB6I'>HALLOWEEN PACK</a></li>
-<li><a href='https://www.youtube.com/watch?v=Sinv5UmikL4'>MENU INVISIVEL</a></li>
-<li><a href='https://www.youtube.com/watch?v=j6KC-2D5RQE'>WALLPAPERS</a></li>
-<li><a href='https://www.youtube.com/watch?v=awSocqK9xsk'>REMOVER AGUA MANTCRAB</a></li>
-<li><a href='https://www.youtube.com/watch?v=vUXp-pzrZIU'>MOD BRILHO</a></li>
-<li><a href='https://www.youtube.com/watch?v=daG2lkVe-Yk'>MOD AURA #2</a></li>
-<li><a href='https://www.youtube.com/watch?v=oQ-B3oCWxHI'>MOD AURA #1</a></li>
-<li><a href='https://www.youtube.com/watch?v=8t38JTCaZ0w'>MEGA PACK 2</a></li>
-<li><a href='https://www.youtube.com/watch?v=QlurZwJaSz0'>MEGA PACK 1</a></li>
-<li><a href='https://www.youtube.com/watch?v=y70y43UCBO0'>PREMIUM NO PC</a></li>
-<li><a href='https://www.youtube.com/watch?v=mG7YNCJkYfg'>SAVE PASS PC</a></li>
-<li><a href='https://www.youtube.com/watch?v=FAeOV6vk0eQ'>MOV WON 3.O PC</a></li>
-<li>------OLDS------</li>
-<li><a href='https://www.youtube.com/watch?v=uC-1MHYtbGA'>LA CASA DE PAPEL</a></li>
-<li><a href='https://www.youtube.com/watch?v=tUZ9bC5afxk'>OUTFIT FREE</a></li>
-<li><a href='https://www.youtube.com/watch?v=xvKIZdQosDU'>DEIXAR TELA IGUAL PC</a></li>
-<li><a href='https://www.youtube.com/watch?v=Sinv5UmikL4'>FUNDO TRANSPARENTE</a></li>
-<li><a href='https://www.youtube.com/watch?v=DwgWQuJ2a2s'>WALLPAPERS</a></li>  
-  
-  
-</ul></li>
-
-<li class='top'><a class='top_link' href='https://tibiamebrasilbr.blogspot.com/2019/12/conquistas.html'><span>CONQUISTA</span></a></li>
-
-<li class='top'><a class='top_link'><span class='down'>RANKING</span></a>
-		<ul class='sub'>
-<li><a href='https://tibiamebrasilbr.blogspot.com/2019/06/ranking-level.html'>RANK LVL</a></li>
-<li><a href='https://tibiamebrasilbr.blogspot.com/2019/06/rank-pvp.html'>RANK PVP</a></li>
-<li><a href='https://tibiamebrasilbr.blogspot.com/2019/06/rank-conquista.html'>RANK CONQUISTA</a></li>
-<li><a href='https://tibiamebrasilbr.blogspot.com/2019/06/ranking2.html'>RANK DIARIO</a></li>
-<li><a href='https://tibiamebrasilbr.blogspot.com/2019/06/RANKINGBR.html'>RANK TODOS</a></li>
-  </ul></li></li></ul>
-</div>
-</header>
-
-<div class="container">
-        <div class="left-table">
-            <div class="separator" style="clear: both; text-align: center;">
-<img border="0" data-original-height="30" width="200" src="https://1.bp.blogspot.com/-vmH8CyiMfYk/XkXMjNFCS8I/AAAAAAAADnY/k5FigEVZp6E4nyfsBdRh1lqlnncPfezswCEwYBhgL/s1600/Menu.png" /><br />
-<a href="https://www.tibiame.com/?section=download">Baixar o TibiaME</a><br />
- <a href="https://payments.cipsoft.com/tibiame/?section=payment&amp;lan=pt&amp;markup=xhtml&amp;page=OrderService&amp;action=entrySelectService&amp;ServiceCategoryID=20&amp;Language=pt&amp;CustomerID=">Premium e Platina</a><br />
- <a href="https://www.tibiame.com/?section=support&amp;lan=pt&amp;markup=xhtml">Suporte</a><br />
- <a href="https://tibiamebrasilbr.blogspot.com/2018/01/mapas.html">Mapa Mundi</a><br />
- <a href="http://tibiamebrasilbr.blogspot.com/2018/01/FAQ.html">Dúvidas TibiaME</a><br />
- <a href="http://tibiamebrasilbr.blogspot.com/2018/01/noticias.html">Notícias (News)</a><br />
- <a href="https://tibiamebrasilbr.blogspot.com/2018/07/rainbow-phoenix.html">Localização Fênix</a><br />
-
-<img border="0" data-original-height="14" width="200" src="https://1.bp.blogspot.com/-5djo3fdDGYM/XkXNW6q4W2I/AAAAAAAADng/g0QPXmOkdzw6MorQbNFfofzpaRxLlFp1wCEwYBhgL/s1600/menu_left_bottom.png" />
-
-
-<img border="0" data-original-height="30" width="200" src="https://1.bp.blogspot.com/-uJGSm9TaOQs/XkXNtfwNO3I/AAAAAAAADnw/B6XDkDUzHloij4JrPcgNk-vxP42NpQKwQCEwYBhgL/s1600/Equipamentos.png" /><br />
- Equipamentos War<br />
- <a href="http://tibiamebrasilbr.blogspot.com/2018/05/capacetes-warrior.html">• Capacete</a><br />
- <a href="http://tibiamebrasilbr.blogspot.com/2018/05/armaduras-warrior.html">• Armadura</a><br />
- <a href="http://tibiamebrasilbr.blogspot.com/2018/05/calcas-warrior.html">• Pernas</a><br />
- <a href="http://tibiamebrasilbr.blogspot.com/2018/05/escudos-warrior.html">• Escudos</a><br />
- <a href="http://tibiamebrasilbr.blogspot.com/2018/05/amuletos.html">• Amuletos</a><br />
- <a href="http://tibiamebrasilbr.blogspot.com/2018/05/aneis.html">• Anéis</a><br /><br />
- Equipamentos Wiz<br />
- <a href="http://tibiamebrasilbr.blogspot.com/2018/05/capacetes-wizard.html">• Capacete</a><br />
- <a href="http://tibiamebrasilbr.blogspot.com/2018/05/armaduras-wizard.html">• Armadura</a><br />
- <a href="http://tibiamebrasilbr.blogspot.com/2018/05/calcas-wizard.html">• Pernas</a><br />
- <a href="http://tibiamebrasilbr.blogspot.com/2018/05/escudos-wizard.html">• Escudos</a><br />
- <a href="http://tibiamebrasilbr.blogspot.com/2018/05/amuletos.html">• Amuletos</a><br />
-  <a href="http://tibiamebrasilbr.blogspot.com/2018/05/aneis.html">• Anéis</a><br /><br />
- Armas Wpns<br /> 
- <a href="http://tibiamebrasilbr.blogspot.com/2018/05/armas-warriors.html">• Armas War</a><br />
- <a href="http://tibiamebrasilbr.blogspot.com/2018/05/armas-wizard.html">• Armas Wiz</a><br />
-
-<img border="0" data-original-height="14" width="200" src="https://1.bp.blogspot.com/-5djo3fdDGYM/XkXNW6q4W2I/AAAAAAAADng/g0QPXmOkdzw6MorQbNFfofzpaRxLlFp1wCEwYBhgL/s1600/menu_left_bottom.png" /><br />
-
- 
-<img border="0" data-original-height="30" width="200" src="https://1.bp.blogspot.com/-swrAswaj50c/XkXNtXRLMhI/AAAAAAAADn0/gW0dfTUTZ98bSf1ssZYC4Ezi6VgvoMSGwCEwYBhgL/s1600/Screenshots.png" /><br />
-<script language="JavaScript" type="text/javascript">
-var how_many_ads = 9;
-var now = new Date()
-var sec = now.getSeconds()
-var ad = sec % how_many_ads;
-ad +=1;
-if (ad==1) {
-txt="INICIO";
-url="https://tibiamebrasilbr.blogspot.com/2019/04/screenshots.html";
-alt="INICIO";
-banner="https://1.bp.blogspot.com/-eV_y_Qt4WQo/XvIbcqcp00I/AAAAAAAAFOU/SgRYMcI4RHAmOBOsKXSJw3tDUBJFY4b4wCLcBGAsYHQ/s1600/Foto9.png";
-width="200";
-height="200";
-}
-if (ad==2) {
-txt="DEMON NEST";
-url="https://tibiamebrasilbr.blogspot.com/2019/04/screenshots.html";
-alt="DEMON NEST";
-banner="https://1.bp.blogspot.com/-yHx5xu0V6XA/XM-uht_r6qI/AAAAAAAACMY/b2SV2wxt3OMYNG_3ruwdgEZ8uCG9P1PGQCLcBGAs/s1600/Foto2.png";
-width="200";
-height="200";
-}
-if (ad==3) {
-txt="SUMMERFEAST"; 
-url="https://tibiamebrasilbr.blogspot.com/2019/04/screenshots.html";
-alt="SUMMERFEAST";
-banner="https://3.bp.blogspot.com/-tVYJ9XdKeG8/XM-ui0a62PI/AAAAAAAACMc/a5De8W46qMsLqtCxXlVyUZWm-JKO_8JXQCLcBGAs/s1600/Foto3.png";
-width="200";
-height="200";
-}
-
-if (ad==4) {
-txt="ODON";
-url="https://tibiamebrasilbr.blogspot.com/2019/04/screenshots.html";
-alt="ODON";
-banner="https://1.bp.blogspot.com/-dnyzJ_Y_NCM/XNDgiTYBXZI/AAAAAAAACNc/K8JPKRzPPJY2h-xGVhniKjnplmDxm5WYgCLcBGAs/s1600/foto4.png";
-width="200";
-height="200";
-}
-
-if (ad==5) {
-txt="PHOENIX NEST";
-url="https://tibiamebrasilbr.blogspot.com/2019/04/screenshots.html";
-alt="PHOENIX NEST";
-banner="https://4.bp.blogspot.com/-HyhmKJtWK2s/XNDgh6iTNTI/AAAAAAAACNQ/iYxd3qkC6mE2-WpqP6rx5f048AwV-ZMkwCLcBGAs/s1600/Foto5.png";
-width="200";
-height="200";
-}
-
-if (ad==6) {
-txt="GM'S ISLAND";
-url="https://tibiamebrasilbr.blogspot.com/2019/04/screenshots.html";
-alt="GM'S ISLAND";
-banner="https://4.bp.blogspot.com/-oIk1u5oE9d8/XNDgihsVVSI/AAAAAAAACNg/03KZrUHATA4alugISiSTNAd8ASart7lJgCLcBGAs/s1600/foto6.png";
-width="200";
-height="200";
-}
-
-if (ad==7) {
-txt="ARENA";
-url="https://tibiamebrasilbr.blogspot.com/2019/04/screenshots.html";
-alt="ARENA";
-banner="https://3.bp.blogspot.com/-GB0a5dOJlFM/XNDghwv2jHI/AAAAAAAACNU/-9wmlN6a1QYrNABYwfxAopUoscgIxnfSQCLcBGAs/s1600/foto%2B7.png";
-width="200";
-height="200";
-}
-
-if (ad==8) {
-txt="EVERDRAGON PORTAL";
-url="https://tibiamebrasilbr.blogspot.com/2019/04/screenshots.html";
-alt="EVERDRAGON PORTAL";
-banner="https://2.bp.blogspot.com/-lmMSFw58pzo/XNDgh8Z3tbI/AAAAAAAACNY/9ztkHx3CETY54njtOg5t9z-cOK5244ZrwCLcBGAs/s1600/Foto8.png";
-width="200";
-height="200";
-}
-
-if (ad==9) {
-txt="NEW BOSS SELEE..";
-url="https://tibiamebrasilbr.blogspot.com/2019/04/screenshots.html";
-alt="NEW BOSS SELEE..";
-banner="https://1.bp.blogspot.com/-U20gnXsh0JU/XvIbcv9YwkI/AAAAAAAAFOY/l1fc0S8H3NQBJtJTfY4pUnD4EGQeAyHhwCLcBGAsYHQ/s1600/Foto10.png";
-width="200";
-height="200";
-}
-
-document.write('<a title="' + txt + '" rel="nofollow" href="' + url + '" target="_blank">');
-document.write('<img src="' + banner + '" width=')
-document.write(width + ' height=' + height + ' ');
-document.write('alt="' + alt + '" border="0">');
-document.write('</a>');
-</script>
-<img border="0" data-original-height="14" width="200" src="https://1.bp.blogspot.com/-5djo3fdDGYM/XkXNW6q4W2I/AAAAAAAADng/g0QPXmOkdzw6MorQbNFfofzpaRxLlFp1wCEwYBhgL/s1600/menu_left_bottom.png" /><br />
-
- 
-<img border="0" data-original-height="30" width="200" src="https://1.bp.blogspot.com/-E59Xf1bNWsM/XkXNte6MmwI/AAAAAAAADnw/kc_0ZU1y1988wVAzbaQOkR6gcjKJlpL8QCEwYBhgL/s1600/Fansites.png" /><br />
-<script language="JavaScript" type="text/javascript">
-var how_many_ads = 4;
-var now = new Date()
-var sec = now.getSeconds()
-var ad = sec % how_many_ads;
-ad +=1;
-if (ad==1) {
-txt="Esse é o banner 1";
-url="http://tibia-me.net/";
-alt="Banner 1";
-banner="https://2.bp.blogspot.com/-kZVY53VNhMk/XNI4rShMc3I/AAAAAAAACOM/mVMvqNslIMMtpCuWNA-CGQtB8fPRc2o-wCEwYBhgL/s200/tibia-menet_xhtml.gif";
-width="200";
-height="112";
-}
-if (ad==2) {
-txt="Olá, sou o banner 2.";
-url="http://tochki.su/tibiame/";
-alt="Banner 2";
-banner="https://2.bp.blogspot.com/-uPwvSgJTBfo/XNI43swmhfI/AAAAAAAACOY/_oqaizfu_hMlF9IzGcfm3-YYFlvWIyd8ACEwYBhgL/s200/tochkisutibiame_xhtml.png";
-width="200";
-height="112";
-}
-if (ad==3) {
-txt="Eu sou o banner 3"; 
-url="http://tibiame.hexat.com/";
-alt="Banner 3";
-banner="https://1.bp.blogspot.com/-hrvXynpGTTc/XNI43uSYcqI/AAAAAAAACOU/YoFW25m8o8kPe43JAfHyzhws0zDkGiirwCEwYBhgL/s200/tibiamehexat_xhtml.png";
-width="200";
-height="112";
-}
-
-if (ad==4) {
-txt="Olá, sou o banner 4.";
-url="http://tibiamebrasilbr.blogspot.com/p/inicio.html?m=1";
-alt="Banner 4";
-banner="https://1.bp.blogspot.com/-v_ZPy2OKnz8/XNI43SFPkoI/AAAAAAAACOQ/X13g_Iu9l5sJF5Rn4rG0qRbZMbTSlLviQCEwYBhgL/s200/tibiamebrasilbr_xhtml.png";
-width="200";
-height="112";
-}
-
-document.write('<a title="' + txt + '" rel="nofollow" href="' + url + '" target="_blank">');
-document.write('<img src="' + banner + '" width=')
-document.write(width + ' height=' + height + ' ');
-document.write('alt="' + alt + '" border="0">');
-document.write('</a>');
-</script>
-
-<img border="0" data-original-height="14" width="200" src="https://1.bp.blogspot.com/-5djo3fdDGYM/XkXNW6q4W2I/AAAAAAAADng/g0QPXmOkdzw6MorQbNFfofzpaRxLlFp1wCEwYBhgL/s1600/menu_left_bottom.png" /></div>
- </div>
-
-        <div class="main-content">
-            dwwd
-        </div>
-
-        <div class="right-table">
-            <a href="https://info.flagcounter.com/T67I"><img src="https://s01.flagcounter.com/count2/T67I/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_18/viewers_0/labels_1/pageviews_1/flags_0/percent_0/" alt="Flag Counter" border="0" /></a>
-			<br>
-			<br>
-		<!doctype html>
-<!-- LikeBtn.com BEGIN -->
-<span class="likebtn-wrapper" data-theme="ugreen" data-lang="pt" data-i18n_like="gostar" data-ef_voting="bounce" data-identifier="tibiamebrasilbr" data-show_dislike_label="true" data-group_identifier="Votação" data-counter_frmt="km" data-counter_zero_show="true" data-counter_count="true" data-popup_dislike="true" data-popup_style="dark" data-popup_html="https://tibiamebrasilbr.blogspot.com/" data-tooltip_enabled="false" ></span>
-<script>(function(d,e,s){if(d.getElementById("likebtn_wjs"))return;a=d.createElement(e);m=d.getElementsByTagName(e)[0];a.async=1;a.id="likebtn_wjs";a.src=s;m.parentNode.insertBefore(a, m)})(document,"script","//w.likebtn.com/js/w/widget.js");</script>
-<!-- LikeBtn.com END -->
-
-</!doctype>
-			<br>
-			<br>
-		<img border="0" data-original-height="30" src="https://1.bp.blogspot.com/-CeDIrcHTKUE/Xm4mnVySfKI/AAAAAAAADso/Vbz6fkuCom8qyJT_7p7_yOrfUVMwscpSwCLcBGAsYHQ/s1600/Base-Contato.png" width="200" /><br />
-<script language="JavaScript" type="text/javascript">
-var how_many_ads = 3;
-var now = new Date()
-var sec = now.getSeconds()
-var ad = sec % how_many_ads;
-ad +=1;
-if (ad==1) {
-txt="Rixester 1";
-url="https://tibiamebrasilbr.blogspot.com/2018/01/contato.html?m=1";
-alt="Banner 1";
-banner="https://1.bp.blogspot.com/-uvIt-NJoS4M/Xm4mndzFcbI/AAAAAAAADsw/VVyvkiuIJpEMn_n2wiPDffj3qEW3FMjyQCLcBGAsYHQ/s1600/Rixester.png";
-width="200";
-height="112";
-}
-if (ad==2) {
-txt="Viajante 2";
-url="https://tibiamebrasilbr.blogspot.com/2018/01/contato.html?m=1";
-alt="Banner 2";
-banner="https://1.bp.blogspot.com/-ST_yVCBn7rI/Xm4mnRVmgSI/AAAAAAAADss/uiFGjvLD4jwR7oWVV4fwtBxaDetJv9YXQCLcBGAsYHQ/s1600/Viajants.png";
-width="200";
-height="112";
-}
-if (ad==3) {
-txt="HURT 3 ";
-url="https://tibiamebrasilbr.blogspot.com/2018/01/contato.html?m=1";
-alt="Banner 3";
-banner="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjKRcu5XdQStocC2v1tch9diDRJDzwAhc6UZ9K1OtGOeYGPIwLSP29aBukk_7KB_gRHZyK6puaa9dp8c8PRpge4WNhIcTEERwIQRk_sNP9ZaLkXddY3MDmBCeJzUX3-52KDnFYZOEBm2cPfVLzuPGPjKGK99uJC7dNcIeHcO76JW9a0Q8ya0btVRuFsfQ/s320/Fansite.png";
-width="200";
-height="112";
-}
-
-document.write('<a title="' + txt + '" rel="nofollow" href="' + url + '" target="_blank">');
-document.write('<img src="' + banner + '" width=')
-document.write(width + ' height=' + height + ' ');
-document.write('alt="' + alt + '" border="0">');
-document.write('</a>');
-</script>
-
-			<img border="0" data-original-height="14" src="https://1.bp.blogspot.com/-5djo3fdDGYM/XkXNW6q4W2I/AAAAAAAADng/g0QPXmOkdzw6MorQbNFfofzpaRxLlFp1wCEwYBhgL/s1600/menu_left_bottom.png" width="200" />
-			<br>
-			<br><script src="https://apis.google.com/js/platform.js"></script>
-
-<div class="g-ytsubscribe" data-channel="Rixester" data-layout="full" data-count="default"></div>
-<div class="g-ytsubscribe" data-channelid="UCjrpriXfbqFlroQgeZ3kWPg" data-layout="full" data-count="default"></div>
-<div class="g-ytsubscribe" data-channelid="UCoFSHVwDOQhiRzBRUq9rPGw" data-layout="full" data-count="default"></div>
-
-        
-
-		
-		</div>
-    </div>
-
-    <footer>
-        dwwwd
-    </footer>
-	
+  <div id="filtro">
+    <label>🔍 Filtrar casos: </label>
+    <input type="text" id="filtroTexto" placeholder="Palavra-chave" />
+    <button onclick="filtrarCasos()">Filtrar</button>
+    <button onclick="resetarCasos()">Limpar</button>
+  </div>
+  <div id="map"></div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Leaflet Control Layers Tree JS -->
+  <script src="https://unpkg.com/leaflet.control.layers.tree/L.Control.Layers.Tree.js"></script>
+  <script>
+    // Inicialização do mapa
+    const map = L.map('map').setView([-10, -40], 5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // URLs das abas da planilha
+    const urlPortos = 'https://opensheet.vercel.app/1NeWdSYOcd3DI9l2yPA507lveb-sKvuJ45ABAXPfKr0o/Portos';
+    const urlAreas  = 'https://opensheet.vercel.app/1NeWdSYOcd3DI9l2yPA507lveb-sKvuJ45ABAXPfKr0o/Áreas';
+    const urlCasos  = 'https://opensheet.vercel.app/1NeWdSYOcd3DI9l2yPA507lveb-sKvuJ45ABAXPfKr0o/Casos';
+    const urlSararea  = 'https://opensheet.vercel.app/1NeWdSYOcd3DI9l2yPA507lveb-sKvuJ45ABAXPfKr0o/Bases';
+
+    // Grupos de camadas
+    const portosGrupo = [];
+    const areasGrupo = [];
+    const casosGrupo = [];
+    const SarareaGrupo = [];
+
+    // Dados originais dos casos
+    let todosOsCasos = [];
+
+    // Função para carregar Portos
+    fetch(urlPortos).then(res => res.json()).then(data => {
+      data.forEach(p => {
+        const lat = parseFloat(p.Latitude);
+        const lon = parseFloat(p.Longitude);
+        const nome = p.Porto || p.Nome || 'Porto';
+        if (!isNaN(lat) && !isNaN(lon)) {
+          const marker = L.circleMarker([lat, lon], {"color": "#660066", "fill": true, "fillColor": "#660066", "fillOpacity": 0.5, "radius": 3, "stroke": true, "weight": 3})
+		  .bindPopup(`<b>${nome}</b>`,{ maxWidth: 600, minWidth: 200 });
+          portosGrupo.push({ label: nome, layer: marker });
+		  }
+      });
+      atualizarControleCamadas();
+    });
+
+    // Função para carregar Áreas
+    fetch(urlAreas).then(res => res.json()).then(data => {
+      data.forEach(area => {
+        const nome = area.Nome || 'Área';
+        const coordString = area.Coordenadas;
+        if (coordString) {
+          const pontos = coordString.split(';').map(par => {
+            const [lon, lat] = par.split(',').map(Number);
+            return [lat, lon];
+          });
+          const polygon = L.polygon(pontos, {
+            color: 'red',
+            fillOpacity: 0.3
+          }).bindPopup(`<b>${nome}</b>`);
+          areasGrupo.push({ label: nome, layer: polygon });
+        }
+      });
+      atualizarControleCamadas();
+    });
+
+    // Função para carregar Áreas
+    fetch(urlSararea).then(res => res.json()).then(data => {
+      data.forEach(area => {
+        const nome = area.Nome || 'Áreas Base';
+        const coordString = area.Coordenadas;
+        if (coordString) {
+          const pontos = coordString.split(';').map(par => {
+            const [lon, lat] = par.split(',').map(Number);
+            return [lat, lon];
+          });
+          const polygon = L.polygon(pontos, {
+            color: 'gray',
+            fillOpacity: 0.0
+          }).bindPopup(`<b>${nome}</b>`);
+          SarareaGrupo.push({ label: nome, layer: polygon });
+        }
+      });
+      atualizarControleCamadas();
+    });
+
+
+    // Função para carregar Casos
+    fetch(urlCasos).then(res => res.json()).then(data => {
+      todosOsCasos = data;
+      carregarCasos();
+    });
+
+    // Função para carregar Casos com agrupamento por tipo
+    function carregarCasos(filtro = '') {
+      casosGrupo.length = 0; // Limpa o grupo de casos
+
+      // Agrupar casos por tipo
+      const casosPorTipo = {};
+      todosOsCasos.forEach(caso => {
+        const tipo = caso.Tipo || 'Outro';
+        if (!casosPorTipo[tipo]) {
+          casosPorTipo[tipo] = [];
+        }
+        casosPorTipo[tipo].push(caso);
+      });
+
+      // Criar grupos por tipo
+      for (const tipo in casosPorTipo) {
+        const casos = casosPorTipo[tipo];
+        const subGrupo = [];
+
+        casos.forEach(caso => {
+          const lat = parseFloat(caso.Latitude);
+          const lon = parseFloat(caso.Longitude);
+          const titulo = caso.Título || 'Caso';
+          const texto = caso.Texto || '';
+          const imagem = caso.Imagem ? `<img src="${caso.Imagem}" style="width:100%; max-width:300px;" />` : '';
+          const conteudo = `${titulo} ${texto}`.toLowerCase();
+          const icons = caso.icons;
+
+          if (conteudo.includes(filtro.toLowerCase()) && !isNaN(lat) && !isNaN(lon)) {
+            const marker = L.marker([lat, lon], {
+              icon: L.divIcon({
+				className: 'custom-icon',
+				html: `<img src="${icons}" style="width: 10px; height: 10px;">`,
+				iconSize: [15, 15],
+				iconAnchor: [8, 8]
+              })
+            }).bindPopup(`<b>${titulo}</b><br>${texto}<br>${imagem}`);
+            subGrupo.push({ label: titulo, layer: marker });
+          }
+        });
+
+        if (subGrupo.length > 0) {
+          casosGrupo.push({ label: `${tipo} (${subGrupo.length})`, selectAllCheckbox: "Selecionar/Desmarcar todos",children: subGrupo });
+        }
+      }
+
+      atualizarControleCamadas();
+    }
+
+    // Funções de filtro
+    function filtrarCasos() {
+      const palavra = document.getElementById('filtroTexto').value;
+      carregarCasos(palavra);
+    }
+
+    function resetarCasos() {
+      document.getElementById('filtroTexto').value = '';
+      carregarCasos();
+    }
+
+    // Controle de camadas
+    let controleCamadas;
+
+    function atualizarControleCamadas() {
+      if (controleCamadas) {
+        map.removeControl(controleCamadas);
+      }
+
+      const treeLayers = {
+        label: "📊 Camadas",
+        selectAllCheckbox: "Selecionar/Desmarcar todos",
+        children: [
+          {
+            label: "🟢 Portos",
+			selectAllCheckbox: "Selecionar/Desmarcar todos",
+            children: portosGrupo
+          },
+          {
+            label: "🔴 Áreas",
+			selectAllCheckbox: "Selecionar/Desmarcar todos",
+            children: areasGrupo
+          },
+          {
+            label: "🟡 Casos",
+			selectAllCheckbox: "Selecionar/Desmarcar todos",
+            children: casosGrupo
+          },
+          {
+            label: "🟣 Linhas Base",
+			selectAllCheckbox: "Selecionar/Desmarcar todos",
+            children: SarareaGrupo
+          }
+        ]
+      };
+
+      controleCamadas = L.control.layers.tree(null, treeLayers, {
+        namedToggle: false,
+        selectorBack: false,
+        closedSymbol: "➕",
+        openedSymbol: "➖",
+        collapseAll: "Recolher",
+        expandAll: "Expandir"
+      }).addTo(map);
+    }
+  </script>
 </body>
-
-
-
-
-
-
-
-
 </html>
